@@ -15,7 +15,7 @@ class Organizer(models.Model):
     description = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
-        return name
+        return self.name
     
     
     class Meta:
