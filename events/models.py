@@ -4,6 +4,7 @@ from django.utils.http import int_to_base36
 
 from categories.models import Category
 from organizers.models import Organizer
+from accounts.models import Account
 
 def id_gen():
     """Generates random string whose length is `ID_LENGTH`"""
@@ -15,7 +16,7 @@ class Event(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(max_length=None)
     image = models.CharField(max_length=255, null=True, blank=True)
-    organizer = models.ForeignKey(Organizer, on_delete=models.SET_NULL, null=True)
+    organizer = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True)
     location = models.CharField(max_length=255)
     event_date = models.DateField(blank=True, null=True)
     event_start_time = models.TimeField(blank=True, null=True)

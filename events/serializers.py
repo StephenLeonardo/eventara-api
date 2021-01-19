@@ -3,10 +3,11 @@ from .models import Event
 
 from categories.serializers import CategorySerializer
 from organizers.serializers import OrganizerSerializer
+from accounts.serializers import AccountSerializer
 
 
 class EventSerializer(serializers.ModelSerializer):
-    organizer = OrganizerSerializer()
+    organizer = AccountSerializer()
     categories = CategorySerializer(many=True)
     
     class Meta:

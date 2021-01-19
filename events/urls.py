@@ -1,8 +1,21 @@
-from django.urls import path
+from django.urls import path, include
 from . import views
+from rest_framework.routers import DefaultRouter
 
+router = DefaultRouter()
+
+# router.register('event', views.EventViewset, basename='event')
+router.register('get', views.EventGenericViewSet, basename='get')
+router.register('upsert', views.EventGenericPostViewSet, basename='upsert')
 
 urlpatterns = [
-    path('', views.EventAPIView.as_view()),
-    path('<str:event_id>/', views.EventDetails.as_view()),
+    
+    path('', include(router.urls)),
+    # path('viewset/<str:pk>/', include(router.urls)),
+
+    # path('', views.EventAPIView.as_view()),
+    # path('create/', views.EventPostView.as_view()),
+    # path('<str:event_id>/', views.EventDetails.as_view()),
+    # path('update-delete/', views.EventDetailsPutDeleteView.as_view()),
+    # path('generic/', views.EventGenericAPIView.as_view()),
 ]
