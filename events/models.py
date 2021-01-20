@@ -14,7 +14,7 @@ def id_gen():
 class Event(models.Model):
     event_id = models.CharField(max_length=6, primary_key=True, default=id_gen, editable=False)
     name = models.CharField(max_length=255)
-    description = models.TextField(max_length=None)
+    description = models.TextField(max_length=None, null=True, blank=True)
     image = models.CharField(max_length=255, null=True, blank=True)
     organizer = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True)
     location = models.CharField(max_length=255)
