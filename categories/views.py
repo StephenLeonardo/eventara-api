@@ -1,9 +1,13 @@
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.views import APIView
-
 from .models import Category
 from .serializers import CategorySerializer, CategoryPostSerializer
+
+
+
+
+
 
 # Create your views here.
 class CategoryAPIView(APIView):

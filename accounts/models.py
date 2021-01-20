@@ -3,11 +3,11 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 import uuid
 from django.utils.http import int_to_base36
-
+import json
 
 # Create your models here.
 class UserManager(BaseUserManager):
-    def create_user(self, username, email, password):
+    def create_user(self, username, email, password, profile_picture, description):
         if username is None:
             raise TypeError('The field Username is required')
         if email is None:
@@ -15,7 +15,9 @@ class UserManager(BaseUserManager):
         if password is None:
             raise TypeError('The field Password is required')
             
-        user = self.model(username=username, email=self.normalize_email(email))
+        user = self.model(username=username, email=self.normalize_email(email),
+                            profile_picture=profile_picture,
+                            description=description)
         user.set_password(password)
         user.save()
         return user
@@ -67,6 +69,10 @@ class Account(AbstractBaseUser, PermissionsMixin):
         
     def tokens(self):
         return ''
+    
+    def toJSON(self):
+        return json.dumps(self, default=lambda o: o.__dict__, 
+            sort_keys=True, indent=4)
         
     class Meta:
         db_table = 'Accounts'

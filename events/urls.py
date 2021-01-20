@@ -2,14 +2,15 @@ from django.urls import path, include
 from . import views
 from rest_framework.routers import DefaultRouter
 
+
+
 router = DefaultRouter()
 
 # router.register('event', views.EventViewset, basename='event')
-router.register('get', views.EventGenericViewSet, basename='get')
-router.register('upsert', views.EventGenericPostViewSet, basename='upsert')
+router.register('', views.EventGenericViewSet, basename='')
+# router.register('upsert', views.EventGenericPostViewSet, basename='upsert')
 
 urlpatterns = [
-    
     path('', include(router.urls)),
     # path('viewset/<str:pk>/', include(router.urls)),
 

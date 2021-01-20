@@ -4,28 +4,84 @@ from rest_framework.views import APIView
 from rest_framework.pagination import (LimitOffsetPagination,
                                         PageNumberPagination)
 from rest_framework import generics, mixins
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 
 from .models import Event
 from .serializers import EventSerializer, EventPostSerializer
 from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
+from django.forms.models import model_to_dict
+from rest_framework.settings import api_settings
 
 
 
-class EventGenericViewSet(viewsets.GenericViewSet, mixins.ListModelMixin,
-                            mixins.RetrieveModelMixin):
-    permission_classes = [AllowAny]
+class EventGenericViewSet(viewsets.GenericViewSet):
+                            
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = EventSerializer
     queryset = Event.objects.all()
     
-class EventGenericPostViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin,
-                            mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
-                            mixins.DestroyModelMixin):
-    permission_classes = [IsAuthenticated]
-    serializer_class = EventPostSerializer
-    queryset = Event.objects.all()                            
+    
+    def get_serializer_class(self):
+        if self.action == 'list' or self.action == 'retrieve':
+            return EventSerializer
+        if self.action == 'create':
+            return EventPostSerializer
+    
+    
+    def list(self, request):
+        pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+        paginator = pagination_class()
+        
+        list_events = Event.objects.all()
+        events = paginator.paginate_queryset(list_events, request)
+        
+        serializer = EventSerializer(events, many=True)
+        return Response({
+            'Status': 'Success',
+            'Message': 'Wow it worked!',
+            'Data': paginator.get_paginated_response(serializer.data).data
+        })
+    
+    def retrieve(self, request, pk=None):
+        queryset = Event.objects.all()
+        event = get_object_or_404(queryset, pk=pk)
+        serializer = EventSerializer(instance=event)
+        return Response({
+            'Status': 'Success',
+            'Message': 'Wow it worked!',
+            'Data': serializer.data
+        })
+    
+    def create(self, request):
+        serializer = EventPostSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            event = Event.objects.create(**serializer.data)
+            event.save()
+            
+            result_serializer = EventSerializer(instance=event)
+            
+            return Response({
+                'Status': 'Success',
+                'Message': 'Wow it worked!',
+                'Data': result_serializer.data,
+            })
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+
+
+# class EventGenericPostViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin,
+#                             mixins.RetrieveModelMixin, mixins.UpdateModelMixin,
+#                             mixins.DestroyModelMixin):
+#     permission_classes = [IsAuthenticated]
+#     serializer_class = EventPostSerializer
+#     queryset = Event.objects.all()       
+    
+    
 
 
 

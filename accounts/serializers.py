@@ -14,9 +14,6 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
             if("username" in request_data and "password" in request_data):
                 # default scenario in simple-jwt  
                 pass
-            elif("username" in request_data and "otp" in request_data):                                   
-                # validate username/otp manually and return access/token pair if successful
-                pass
 
             else:
                 # some fields were missing
@@ -31,14 +28,46 @@ from .models import Account
 
 
 class AccountSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Account
-            fields = ['id', 'username', 'email', 'profile_picture', 'description',
-                        'is_verified']
+    class Meta:
+        model = Account
+        fields = ['id',
+                'username',
+                'email',
+                'profile_picture',
+                'description',
+                'is_verified']
             
             
 class AccountPostSerializer(serializers.ModelSerializer):
-        class Meta:
-            model = Account
-            fields = ['username', 'email', 'profile_picture', 'description',
-                        'is_verified']
+    class Meta:
+        model = Account
+        fields = ['id',
+                'username',
+                'email',
+                'password',
+                'profile_picture',
+                'description',
+                'is_verified']
+                
+                
+                
+
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['username',
+                'email',
+                'password',
+                'profile_picture',
+                'description',]
+
+
+
+
+
+
+
+
+
+
+    
