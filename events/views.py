@@ -12,7 +12,11 @@ from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
 from django.forms.models import model_to_dict
 from rest_framework.settings import api_settings
+from rest_framework.decorators import action
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
+from categories.serializers import CategoryPostSerializer
 
 
 class EventGenericViewSet(viewsets.GenericViewSet):
@@ -20,6 +24,7 @@ class EventGenericViewSet(viewsets.GenericViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = EventSerializer
     queryset = Event.objects.all()
+    
     
     
     def get_serializer_class(self):
@@ -70,9 +75,49 @@ class EventGenericViewSet(viewsets.GenericViewSet):
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    
+    @action(methods=['GET'], detail=False,
+        permission_classes=[IsAuthenticatedOrReadOnly])
+    def get_by_categories(self, request):
+        """
+        This API is to get all events by categories (can be more than 1)
+        ---
+        parameters:
+        - name: category_list
+          description: ex: ?category_list=2&category_list=3
+          required: true
+          type: string
+        """
+        category_list = request.query_params.get('category_list', None)
+        
+        # category_list = kwargs.get('category_list', [])
+        
+        request_serializer = CategoryPostSerializer(data=category_list,
+                                                    many=True)
+        
+        
+        # if request_serializer.is_valid():
+        try:
+            pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+            paginator = pagination_class()
 
-
-
+            # print(request_serializer.data)
+            list_events = Event.objects.filter(
+                                        categories__in=category_list)
+            print(list_events)
+            events = paginator.paginate_queryset(list_events, request)
+            
+            serializer = EventSerializer(events, many=True)
+            return Response({
+                'Status': 'Success',
+                'Message': 'Wow it worked!',
+                'Data': paginator.get_paginated_response(serializer.data).data
+            })
+        except Exception as e:
+            return Response({
+                'Status': 'Failed',
+                'Message': str(e),
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 # class EventGenericPostViewSet(viewsets.GenericViewSet, mixins.CreateModelMixin,
 #                             mixins.RetrieveModelMixin, mixins.UpdateModelMixin,

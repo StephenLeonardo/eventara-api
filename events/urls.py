@@ -8,6 +8,7 @@ router = DefaultRouter()
 
 # router.register('event', views.EventViewset, basename='event')
 router.register('', views.EventGenericViewSet, basename='')
+# router.register('<str:category_list>', views.EventByCategoryView)
 # router.register('upsert', views.EventGenericPostViewSet, basename='upsert')
 
 urlpatterns = [
