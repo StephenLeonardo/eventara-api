@@ -17,7 +17,8 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from categories.serializers import CategoryPostSerializer
-
+from accounts.models import Account
+from categories.models import Category
 
 class EventGenericViewSet(viewsets.GenericViewSet):
                             
@@ -62,7 +63,15 @@ class EventGenericViewSet(viewsets.GenericViewSet):
         serializer = EventPostSerializer(data=request.data)
         
         if serializer.is_valid():
-            event = Event.objects.create(**serializer.data)
+            serialized_data = serializer.data
+            serialized_data['organizer'] = Account.objects.get(
+                                    id=serializer.data.pop('organizer', None)
+                                    )
+            category_list = serialized_data.pop('categories', [])
+            print(serialized_data)
+            
+            event = Event.objects.create(**serialized_data)
+            event.categories.set(category_list)
             event.save()
             
             result_serializer = EventSerializer(instance=event)
