@@ -67,7 +67,8 @@ class LoginSerializer(serializers.ModelSerializer):
         fields = ['email',
                 'password']
 
-
+class RequestVerifSerializer(serializers.Serializer):
+    account_id = serializers.CharField()
 
 
 

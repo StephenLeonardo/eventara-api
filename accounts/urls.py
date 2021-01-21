@@ -8,8 +8,9 @@ router = DefaultRouter()
 
 router.register('', views.AccountViewSet, basename='register')
 router.register('verify-email', views.VerifyEmail, basename='verify-email')
-# router.register('list', views.GetAllAccountViewSet, basename='list')
-print("router >>>", router.get_urls())
+router.register('verify-organization', views.VerifyOrganization,
+                    basename='verify-organization')
+
 urlpatterns = [
     path('', include(router.urls)),
 ]
