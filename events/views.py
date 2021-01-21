@@ -76,19 +76,20 @@ class EventGenericViewSet(viewsets.GenericViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     
-    @action(methods=['GET'], detail=False,
-        permission_classes=[IsAuthenticatedOrReadOnly])
+    
+    # @action(methods=['GET'], detail=False)
+    @swagger_auto_schema(operation_description='GET /event/get-by-categories/')
+    @action(detail=False, methods=['get'])
     def get_by_categories(self, request):
         """
         This API is to get all events by categories (can be more than 1)
         ---
         parameters:
-        - name: category_list
-          description: ex: ?category_list=2&category_list=3
+        - name: category_id
           required: true
           type: string
         """
-        category_list = request.query_params.get('category_list', None)
+        category_list = request.query_params.get('category_id', None)
         
         # category_list = kwargs.get('category_list', [])
         
