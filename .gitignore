@@ -4,3 +4,4 @@ evehuntAPI/secret_settings.py
 local_conf.py
 ll_theme
 .build
+**/__pycache__
