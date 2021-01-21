@@ -61,6 +61,11 @@ class RegisterSerializer(serializers.ModelSerializer):
                 'profile_picture',
                 'description',]
 
+class LoginSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['email',
+                'password']
 
 
 
