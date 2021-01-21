@@ -43,7 +43,7 @@ class EventGenericViewSet(viewsets.GenericViewSet):
         
         serializer = EventSerializer(events, many=True)
         return Response({
-            'Status': 'Success',
+            'Status': True,
             'Message': 'Wow it worked!',
             'Data': paginator.get_paginated_response(serializer.data).data
         })
@@ -53,7 +53,7 @@ class EventGenericViewSet(viewsets.GenericViewSet):
         event = get_object_or_404(queryset, pk=pk)
         serializer = EventSerializer(instance=event)
         return Response({
-            'Status': 'Success',
+            'Status': True,
             'Message': 'Wow it worked!',
             'Data': serializer.data
         })
@@ -68,7 +68,7 @@ class EventGenericViewSet(viewsets.GenericViewSet):
             result_serializer = EventSerializer(instance=event)
             
             return Response({
-                'Status': 'Success',
+                'Status': True,
                 'Message': 'Wow it worked!',
                 'Data': result_serializer.data,
             })
@@ -77,8 +77,11 @@ class EventGenericViewSet(viewsets.GenericViewSet):
 
     
     
-    # @action(methods=['GET'], detail=False)
-    @swagger_auto_schema(operation_description='GET /event/get-by-categories/')
+    category_id_param = openapi.Parameter('category_id', in_=openapi.IN_QUERY,
+                         description='Category ID, you can specify more that one etc: ?category_id=2&category_id=3...',
+                         type=openapi.TYPE_INTEGER)
+    
+    @swagger_auto_schema(manual_parameters=[category_id_param], method='GET')
     @action(detail=False, methods=['get'])
     def get_by_categories(self, request):
         """
@@ -90,19 +93,15 @@ class EventGenericViewSet(viewsets.GenericViewSet):
           type: string
         """
         category_list = request.query_params.get('category_id', None)
-        
-        # category_list = kwargs.get('category_list', [])
-        
+                
         request_serializer = CategoryPostSerializer(data=category_list,
                                                     many=True)
         
         
-        # if request_serializer.is_valid():
         try:
             pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
             paginator = pagination_class()
 
-            # print(request_serializer.data)
             list_events = Event.objects.filter(
                                         categories__in=category_list)
             print(list_events)
@@ -110,13 +109,13 @@ class EventGenericViewSet(viewsets.GenericViewSet):
             
             serializer = EventSerializer(events, many=True)
             return Response({
-                'Status': 'Success',
+                'Status': True,
                 'Message': 'Wow it worked!',
                 'Data': paginator.get_paginated_response(serializer.data).data
             })
         except Exception as e:
             return Response({
-                'Status': 'Failed',
+                'Status': False,
                 'Message': str(e),
             }, status=status.HTTP_400_BAD_REQUEST)
 

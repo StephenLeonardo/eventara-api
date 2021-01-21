@@ -25,7 +25,7 @@ class CategoryView(viewsets.GenericViewSet):
         
         serializer = CategorySerializer(categories, many=True)
         return Response({
-            'Status': 'Success',
+            'Status': True,
             'Message': 'Wow it worked!',
             'Data': paginator.get_paginated_response(serializer.data).data
         })
@@ -35,7 +35,7 @@ class CategoryView(viewsets.GenericViewSet):
         category = get_object_or_404(queryset, pk=pk)
         serializer = CategorySerializer(category)
         return Response({
-            'Status': 'Success',
+            'Status': True,
             'Message': 'Wow it worked!',
             'Data': serializer.data
         })
@@ -50,7 +50,7 @@ class CategoryView(viewsets.GenericViewSet):
             result_serializer = CategorySerializer(category)
             
             return Response({
-                'Status': 'Success',
+                'Status': True,
                 'Message': 'Wow it worked!',
                 'Data': result_serializer.data,
             })
@@ -63,7 +63,7 @@ class CategoryView(viewsets.GenericViewSet):
             category = get_object_or_404(queryset, pk=pk)
             category.delete()
             return Response({
-                'Status': 'Success',
+                'Status': True,
                 'Message': 'Wow it worked!',
                 'Data': None,
             })
@@ -81,7 +81,7 @@ class CategoryView(viewsets.GenericViewSet):
             
             result_serializer = CategorySerializer(category)
             return Response({
-                'Status': 'Success',
+                'Status': True,
                 'Message': 'Wow it worked!',
                 'Data': result_serializer.data,
             })

@@ -4,7 +4,6 @@ from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
 import uuid
 from django.utils.http import int_to_base36
 import json
-
 # Create your models here.
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password, profile_picture, description):
@@ -20,6 +19,8 @@ class UserManager(BaseUserManager):
                             description=description)
         user.set_password(password)
         user.save()
+    
+        
         return user
     
     def create_superuser(self, username, email, password):
@@ -55,6 +56,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_organizer = models.BooleanField(default=False)
+    is_email_verified = models.BooleanField(default=False)
     
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
