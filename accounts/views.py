@@ -1,7 +1,8 @@
 from django.shortcuts import render
 # from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import (RegisterSerializer, AccountSerializer,
-                            LoginSerializer, RequestVerifSerializer)
+                            LoginSerializer, RequestVerifSerializer,
+                            LoginReturnSerializer)
 from rest_framework import viewsets, generics, mixins, status
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -109,10 +110,11 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         try:            
             account = Account.objects.get((Q(username=email) | Q(email=email))
                                         & Q(is_active=True))
-                                        
+                                                                                
             if account.is_email_verified:
                 if account.check_password(password):
                     get_serializer = AccountSerializer(account)
+                                        
                     return Response({
                         'Status': True,
                         'Message': 'Wow it worked!',
@@ -297,8 +299,6 @@ class VerifyOrganization(viewsets.GenericViewSet):
                 'Message': str(e)
             })
     
-            
-            
             
             
     
