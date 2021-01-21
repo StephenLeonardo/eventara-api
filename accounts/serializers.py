@@ -72,8 +72,8 @@ class RequestVerifSerializer(serializers.Serializer):
 
 
 class LoginReturnSerializer(serializers.ModelSerializer):
-    access_token = serializers.CharType()
-    refresh_token = serializers.CharType()
+    access_token = serializers.CharField()
+    refresh_token = serializers.CharField()
     class Meta:
         model = Account
         fields = ['id',
