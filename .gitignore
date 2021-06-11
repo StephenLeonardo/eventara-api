@@ -5,3 +5,4 @@ local_conf.py
 ll_theme
 .build
 **/__pycache__
+db.sqlite3
