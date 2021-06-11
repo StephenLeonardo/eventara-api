@@ -1,37 +1,21 @@
-## Welcome to GitHub Pages
+## EveHunt-API
+This is an API for the app evehunt, it is used on the purpose of getting and sending data regarding events. You can check the api through https://stephenleo.pythonanywhere.com/swagger/
 
-You can use the [editor on GitHub](https://github.com/StephenLeonardo/evehunt-api/edit/main/README.md) to maintain and preview the content for your website in Markdown files.
+## Motivation
+I saw a lot of people in my campus looking for events through my campus Line Square which ignited this idea of me creating an app for it.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Build Status
+- All of the main functionality has been implemented in this API.
+- There are still other functionality that haven't been implemented yet like forgetting passwords, etc.
+- No CI/CD has been implemented yet.
+ Any help or contribution will be greatly appreciated.
 
-### Markdown
+## Screenshots
+![image](https://user-images.githubusercontent.com/46316013/111310651-ea0b8180-868f-11eb-8a80-66aa8e7ab495.png)
+![image](https://user-images.githubusercontent.com/46316013/111310963-3eaefc80-8690-11eb-9ec8-9f80784aaa55.png)
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+## Installation
+On progress
 
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/StephenLeonardo/evehunt-api/settings). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+## Contribute
+To contribute to this project, kindly fork this repository and create a pull request, or email me for more info at stephenleonardo18@gmail.com
