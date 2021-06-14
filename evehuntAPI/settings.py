@@ -32,7 +32,7 @@ from .secret_settings import *
 AUTH_USER_MODEL = 'accounts.Account'
 AUTHENTICATION_BACKENDS = (
     'accounts.models.UsernameOrEmailBackend', # our custom authentication backend
-    'django.contrib.auth.backends.ModelBackend' # fallback to default authentication backend if first fails 
+    'django.contrib.auth.backends.ModelBackend' # fallback to default authentication backend if first fails
     )
 # Application definition
 
@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'corsheaders',
     'drf_yasg',
     'accounts',
     'categories',
@@ -91,7 +92,7 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 20,
     'NON_FIELD_ERRORS_KEY': 'Error',
 }
-# 
+#
 # from datetime import timedelta
 # SIMPLE_JWT = {
 #     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
@@ -151,5 +152,3 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
-
-
