@@ -22,12 +22,14 @@ class Event(models.Model):
     event_start_time = models.TimeField(blank=True, null=True)
     event_end_time = models.TimeField(blank=True, null=True)
     categories = models.ManyToManyField(Category)
-    
+    is_online = models.BooleanField(default=False)
+    registration_link = models.TextField(null=True, blank=True)
+
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
-    
+
     def __str__(self):
         return self.name
-    
+
     class Meta:
         db_table = "events"

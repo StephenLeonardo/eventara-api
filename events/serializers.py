@@ -9,7 +9,7 @@ from accounts.serializers import AccountSerializer
 class EventSerializer(serializers.ModelSerializer):
     organizer = AccountSerializer()
     categories = CategorySerializer(many=True)
-    
+
     class Meta:
         model = Event
         fields = ['event_id',
@@ -21,9 +21,11 @@ class EventSerializer(serializers.ModelSerializer):
                     'event_date',
                     'event_start_time',
                     'event_end_time',
-                    'categories']
-            
-            
+                    'categories',
+                    'is_online',
+                    'registration_link']
+
+
 class EventPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
@@ -35,4 +37,6 @@ class EventPostSerializer(serializers.ModelSerializer):
                     'event_date',
                     'event_start_time',
                     'event_end_time',
-                    'categories']
+                    'categories',
+                    'is_online',
+                    'registration_link']
