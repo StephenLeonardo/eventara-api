@@ -12,7 +12,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         try:
             request_data = json.loads(request.body)
             if("username" in request_data and "password" in request_data):
-                # default scenario in simple-jwt  
+                # default scenario in simple-jwt
                 pass
 
             else:
@@ -21,8 +21,8 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         except:
             pass
-            
-            
+
+
 from rest_framework import serializers
 from .models import Account
 
@@ -36,8 +36,8 @@ class AccountSerializer(serializers.ModelSerializer):
                 'profile_picture',
                 'description',
                 'is_verified']
-            
-            
+
+
 class AccountPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
@@ -48,9 +48,9 @@ class AccountPostSerializer(serializers.ModelSerializer):
                 'profile_picture',
                 'description',
                 'is_verified']
-                
-                
-                
+
+
+
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
@@ -85,8 +85,8 @@ class LoginReturnSerializer(serializers.ModelSerializer):
                 'access_token',
                 'refresh_token']
 
+class EmailVerifSerializer(serializers.Serializer):
+    token = serializers.CharField()
 
-
-
-
-    
+class OrganizationVerifSerializer(serializers.Serializer):
+    email = serializers.CharField()

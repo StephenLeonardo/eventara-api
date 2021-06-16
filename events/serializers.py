@@ -40,3 +40,9 @@ class EventPostSerializer(serializers.ModelSerializer):
                     'categories',
                     'is_online',
                     'registration_link']
+
+
+class EventByCategorySerializer(serializers.Serializer):
+    category_list = serializers.ListField(
+                       child=serializers.IntegerField()
+                    )
