@@ -6,3 +6,5 @@ ll_theme
 .build
 **/__pycache__
 db.sqlite3
+Dockerfile
+docker-compose.yml
