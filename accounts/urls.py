@@ -10,6 +10,8 @@ router.register('', views.AccountViewSet, basename='register')
 router.register('verify-email', views.VerifyEmail, basename='verify-email')
 router.register('verify-organization', views.VerifyOrganization,
                     basename='verify-organization')
+router.register('verify-email-backdoor', views.VerifyEmailBackDoor,
+                    basename='verify-email-backdoor')
 
 urlpatterns = [
     path('', include(router.urls)),

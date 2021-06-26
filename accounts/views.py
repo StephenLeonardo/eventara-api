@@ -69,8 +69,6 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
         if serializer.is_valid():
             account = Account.objects.create_user(**serializer.validated_data)
-            account.is_email_verified = True
-            account.save()
             get_serializer = AccountSerializer(account)
 
 
@@ -263,7 +261,7 @@ class VerifyOrganization(viewsets.GenericViewSet):
     serializer_class = OrganizationVerifSerializer
 
     email_param_config = openapi.Parameter('email', in_=openapi.IN_QUERY,
-                         description='encoded email', type=openapi.TYPE_STRING,
+                         description='email', type=openapi.TYPE_STRING,
                          required=True)
 
 
@@ -293,6 +291,39 @@ class VerifyOrganization(viewsets.GenericViewSet):
                 'Data': ret_serializer.data
             })
 
+
+        except Exception as e:
+            return Response({
+                'Status': False,
+                'Message': str(e)
+            })
+
+
+class VerifyEmailBackDoor(viewsets.GenericViewSet):
+    serializer_class = OrganizationVerifSerializer
+
+
+    @swagger_auto_schema(method='POST')
+    @action(methods=['POST'], detail=False)
+    def verify(self, request):
+        try:
+            email = request.data.get('email',None)
+            account = Account.objects.get(email=email)
+
+            if not account.is_verified:
+                account.is_verified = True
+            if not account.is_email_verified:
+                account.is_email_verified = True
+
+            account.save()
+
+            ret_serializer = AccountSerializer(account)
+
+            return Response({
+                'Status': True,
+                'Message': 'Congratulations, your account has been verified!',
+                'Data': ret_serializer.data
+            })
 
         except Exception as e:
             return Response({
