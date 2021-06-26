@@ -69,23 +69,25 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
         if serializer.is_valid():
             account = Account.objects.create_user(**serializer.validated_data)
+            account.is_email_verified = True
+            account.save()
             get_serializer = AccountSerializer(account)
 
 
-            token = RefreshToken.for_user(account).access_token
+            # token = RefreshToken.for_user(account).access_token
 
-            current_site = get_current_site(request).domain
-            relative_link = reverse('verify-email-verify')
-            abs_url = request.is_secure() and "https" or "http" + '://'+current_site+relative_link+"?token="+str(token)
-            email_body = 'Hi {}. Use the link below to verify your email:\n{}'.format(account.username, abs_url)
+            # current_site = get_current_site(request).domain
+            # relative_link = reverse('verify-email-verify')
+            # abs_url = request.is_secure() and "https" or "http" + '://'+current_site+relative_link+"?token="+str(token)
+            # email_body = 'Hi {}. Use the link below to verify your email:\n{}'.format(account.username, abs_url)
 
-            data = {
-                'email_body': email_body,
-                'email_subject': 'Evehunt - Verify your Email',
-                'email_to': account.email
-            }
+            # data = {
+            #     'email_body': email_body,
+            #     'email_subject': 'Evehunt - Verify your Email',
+            #     'email_to': account.email
+            # }
 
-            Util.send_verification_email(data)
+            # Util.send_verification_email(data)
 
 
             return Response({
@@ -124,25 +126,25 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                         'Message': 'Email or Password is incorrect'
                     })
             else:
-                token = RefreshToken.for_user(account).access_token
+                # token = RefreshToken.for_user(account).access_token
 
-                current_site = get_current_site(request).domain
-                relative_link = reverse('verify-email-verify')
-                abs_url = request.is_secure() and "https" or "http" + '://'+current_site+relative_link+"?token="+str(token)
-                email_body = 'Hi {}. Use the link below to verify your email:\n{}'.format(account.username, abs_url)
+                # current_site = get_current_site(request).domain
+                # relative_link = reverse('verify-email-verify')
+                # abs_url = request.is_secure() and "https" or "http" + '://'+current_site+relative_link+"?token="+str(token)
+                # email_body = 'Hi {}. Use the link below to verify your email:\n{}'.format(account.username, abs_url)
 
-                data = {
-                    'email_body': email_body,
-                    'email_subject': 'Evehunt - Verify your Email',
-                    'email_to': account.email
-                }
+                # data = {
+                #     'email_body': email_body,
+                #     'email_subject': 'Evehunt - Verify your Email',
+                #     'email_to': account.email
+                # }
 
-                Util.send_verification_email(data)
+                # Util.send_verification_email(data)
 
 
                 return Response({
                     'Status': False,
-                    'Message': 'We have sent an email to {}. Please verify your email before proceeding'.format(account.email)
+                    'Message': 'Email has not yet been verify, please check your email'
                 })
 
 
@@ -166,34 +168,34 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             try:
                 account = Account.objects.get(id=account_id)
 
-                current_site = get_current_site(request).domain
-                relative_link = reverse('verify-organization-verify')
+                # current_site = get_current_site(request).domain
+                # relative_link = reverse('verify-organization-verify')
 
-                message_bytes = account.email.encode('ascii')
-                email_bytes = base64.b64encode(message_bytes)
-                email_enc = email_bytes.decode('ascii')
+                # message_bytes = account.email.encode('ascii')
+                # email_bytes = base64.b64encode(message_bytes)
+                # email_enc = email_bytes.decode('ascii')
 
-                abs_url = request.is_secure() and "https" or "http" + '://'+current_site+relative_link+"?email="+str(email_enc)
-                email_body = '''
-                Account name : {username}\n
+                # abs_url = request.is_secure() and "https" or "http" + '://'+current_site+relative_link+"?email="+str(email_enc)
+                # email_body = '''
+                # Account name : {username}\n
 
 
 
-                Use the link below to verify their organization:\n
-                {url}
-                '''.format(
-                    username=account.username,
-                    email=account.email,
-                    url=abs_url
-                )
+                # Use the link below to verify their organization:\n
+                # {url}
+                # '''.format(
+                #     username=account.username,
+                #     email=account.email,
+                #     url=abs_url
+                # )
 
-                data = {
-                    'email_body': email_body,
-                    'email_subject': 'Evehunt - Request Organization Verification',
-                    'email_to': settings.ADMIN_EMAIL
-                }
+                # data = {
+                #     'email_body': email_body,
+                #     'email_subject': 'Evehunt - Request Organization Verification',
+                #     'email_to': settings.ADMIN_EMAIL
+                # }
 
-                Util.send_verification_email(data)
+                # Util.send_verification_email(data)
 
                 return Response({
                     'Status': True,
@@ -270,10 +272,11 @@ class VerifyOrganization(viewsets.GenericViewSet):
     def verify(self, request):
 
         try:
-            email_enc = request.data.get('email', None)
-            base64_bytes = email_enc.encode('ascii')
-            email_bytes = base64.b64decode(base64_bytes)
-            email = email_bytes.decode('ascii')
+            # email_enc = request.data.get('email', None)
+            # base64_bytes = email_enc.encode('ascii')
+            # email_bytes = base64.b64decode(base64_bytes)
+            # email = email_bytes.decode('ascii')
+            email = request.data.get('email', None)
 
             account = Account.objects.get(email=email)
 
