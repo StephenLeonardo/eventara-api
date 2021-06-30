@@ -1,5 +1,5 @@
-## EveHunt-API
-This is an API for the app evehunt, it is used on the purpose of getting and sending data regarding events. You can check the api through https://stephenleo.pythonanywhere.com/swagger/
+## Eventara-API
+This is an API for the app Eventara, it is used on the purpose of getting and sending data regarding events. You can check the api through https://stephenleo.pythonanywhere.com/swagger/
 
 ## Motivation
 I saw a lot of people in my campus looking for events through my campus Line Square which ignited this idea of me creating an app for it.
