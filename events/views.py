@@ -72,9 +72,14 @@ class EventGenericViewSet(mixins.CreateModelMixin,
 
         if serializer.is_valid():
             serialized_data = serializer.data
+            # organizer = Account.objects.get(
+            #             username=serializer.data.get('organizer_username', None)
+            #             )
+            # print(organizer)
             serialized_data['organizer'] = Account.objects.get(
-                                    id=serializer.data.pop('organizer', None)
+                                    username=serialized_data.pop('organizer_username', None)
                                     )
+                                    
             category_list = serialized_data.pop('categories', [])
 
             event = Event.objects.create(**serialized_data)
