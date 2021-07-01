@@ -21,9 +21,14 @@ from categories.serializers import CategoryPostSerializer
 from accounts.models import Account
 from categories.models import Category
 
-class EventGenericViewSet(viewsets.GenericViewSet):
+class EventGenericViewSet(mixins.CreateModelMixin,
+                        mixins.RetrieveModelMixin,
+                        mixins.UpdateModelMixin,
+                        mixins.DestroyModelMixin,
+                        mixins.ListModelMixin,
+                        viewsets.GenericViewSet):
 
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [AllowAny] # For development purposes
     serializer_class = EventSerializer
     queryset = Event.objects.all()
 
@@ -32,7 +37,8 @@ class EventGenericViewSet(viewsets.GenericViewSet):
     def get_serializer_class(self):
         if self.action == 'list' or self.action == 'retrieve':
             return EventSerializer
-        if self.action == 'create':
+        if (self.action == 'create' or self.action == 'update'
+            or self.action == 'partial_update'):
             return EventPostSerializer
         if self.action == 'get_by_categories':
             return EventSerializer
@@ -84,6 +90,7 @@ class EventGenericViewSet(viewsets.GenericViewSet):
             })
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
