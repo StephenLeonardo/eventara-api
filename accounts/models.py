@@ -106,7 +106,7 @@ class UsernameOrEmailBackend(object):
         MyUser = get_user_model()
         try:
             return MyUser.objects.get(pk=id)
-        except my_user_model.DoesNotExist:
+        except MyUser.DoesNotExist:
             return None
     
     
