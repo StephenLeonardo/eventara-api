@@ -8,3 +8,4 @@ ll_theme
 db.sqlite3
 Dockerfile
 docker-compose.yml
+.vscode
