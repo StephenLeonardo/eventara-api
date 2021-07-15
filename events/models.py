@@ -21,7 +21,7 @@ class Event(models.Model):
     event_date = models.DateField(blank=True, null=True)
     event_start_time = models.TimeField(blank=True, null=True)
     event_end_time = models.TimeField(blank=True, null=True)
-    categories = models.ManyToManyField(Category)
+    categories = models.ManyToManyField(Category, blank=True, null=True)
     is_online = models.BooleanField(default=False)
     registration_link = models.TextField(null=True, blank=True)
 
