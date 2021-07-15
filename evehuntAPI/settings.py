@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import environ
+
+env = environ.Env()
+environ.Env.read_env()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,13 +24,36 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-# in secret_settings.py
-from .secret_settings import *
 
-# SECURITY WARNING: don't run with debug turned on in production!
-# in secret_settings.py
+SECRET_KEY = env('SECRET_KEY')
 
-# in secret_settings.py
+DEBUG = env('DEBUG')
+
+
+if env('ENVIRONMENT') == 'DEV':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'db.sqlite3'),
+        }
+    }  
+elif env('ENVIRONMENT') == 'PROD':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': env('DB_NAME'),
+            'USER': env('DB_USER'),
+            'PASSWORD': env('DB_PASSWORD'),
+            'HOST': env('DB_HOST'),
+            'PORT': env('DB_PORT'),
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'use_unicode': True,
+            }
+        }
+    }
+else:
+    raise Exception("No Enviroment Detected")
 
 
 AUTH_USER_MODEL = 'accounts.Account'
@@ -113,7 +140,6 @@ SWAGGER_SETTINGS = {
 
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
-# In secret_settings.py
 
 
 # Password validation
