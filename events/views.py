@@ -47,7 +47,7 @@ class EventGenericViewSet(mixins.CreateModelMixin,
         pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
         paginator = pagination_class()
 
-        list_events = Event.objects.all()
+        list_events = Event.objects.all().order_by('-created_date')
         events = paginator.paginate_queryset(list_events, request)
 
         serializer = EventSerializer(events, many=True)
@@ -119,7 +119,7 @@ class EventGenericViewSet(mixins.CreateModelMixin,
             paginator = pagination_class()
 
             list_events = Event.objects.filter(
-                                        categories__in=category_list)
+                                        categories__in=category_list).order_by('-created_date')
             events = paginator.paginate_queryset(list_events, request)
 
             serializer = EventSerializer(events, many=True)
