@@ -46,6 +46,9 @@ DATABASES = {
 }
 
 
+ALLOWED_HOSTS = ['*'] 
+
+
 AUTH_USER_MODEL = 'accounts.Account'
 AUTHENTICATION_BACKENDS = (
     'accounts.models.UsernameOrEmailBackend', # our custom authentication backend
