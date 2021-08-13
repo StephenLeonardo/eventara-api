@@ -25,6 +25,16 @@ class EventSerializer(serializers.ModelSerializer):
                     'is_online',
                     'registration_link']
 
+class EventListSerializer(serializers.ModelSerializer):
+    organizer = AccountSerializer()
+
+    class Meta:
+        model = Event
+        fields = ['event_id',
+                    'name',
+                    'image',
+                    'organizer',]
+
 
 class EventPostSerializer(serializers.ModelSerializer):
     organizer_username = serializers.CharField()

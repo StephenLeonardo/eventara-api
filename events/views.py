@@ -1,17 +1,13 @@
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.views import APIView
-from rest_framework.pagination import (LimitOffsetPagination,
-                                        PageNumberPagination)
-from rest_framework import generics, mixins
+from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 
 from .models import Event
 from .serializers import (EventSerializer, EventPostSerializer,
-                            EventByCategorySerializer)
+                            EventByCategorySerializer, EventListSerializer)
 from rest_framework import viewsets
 from django.shortcuts import get_object_or_404
-from django.forms.models import model_to_dict
 from rest_framework.settings import api_settings
 from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
@@ -19,7 +15,6 @@ from drf_yasg import openapi
 
 from categories.serializers import CategoryPostSerializer
 from accounts.models import Account
-from categories.models import Category
 
 class EventGenericViewSet(mixins.CreateModelMixin,
                         mixins.RetrieveModelMixin,
@@ -35,12 +30,14 @@ class EventGenericViewSet(mixins.CreateModelMixin,
 
 
     def get_serializer_class(self):
-        if self.action == 'list' or self.action == 'retrieve':
+        if self.action == 'list':
+            return EventListSerializer
+        elif self.action == 'retrieve':
             return EventSerializer
-        if (self.action == 'create' or self.action == 'update'
+        elif (self.action == 'create' or self.action == 'update'
             or self.action == 'partial_update'):
             return EventPostSerializer
-        if self.action == 'get_by_categories':
+        elif self.action == 'get_by_categories':
             return EventSerializer
 
     def list(self, request):
