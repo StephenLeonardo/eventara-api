@@ -1,10 +1,8 @@
 from rest_framework.response import Response
-from rest_framework import status, viewsets, mixins
-from rest_framework.views import APIView
+from rest_framework import status, viewsets
 from .models import Category
 from .serializers import CategorySerializer, CategoryPostSerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
-from rest_framework.settings import api_settings
 from django.shortcuts import get_object_or_404
 
 
@@ -17,17 +15,14 @@ class CategoryView(viewsets.GenericViewSet):
     
     
     def list(self, request):
-        pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
-        paginator = pagination_class()
+        list_categories = Category.objects.all()    
         
-        list_categories = Category.objects.all()
-        categories = paginator.paginate_queryset(list_categories, request)
+        serializer = CategorySerializer(list_categories, many=True)
         
-        serializer = CategorySerializer(categories, many=True)
         return Response({
             'Status': True,
             'Message': 'Wow it worked!',
-            'Data': paginator.get_paginated_response(serializer.data).data
+            'Data': serializer.data
         })
     
     def retrieve(self, request, pk=None):

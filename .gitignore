@@ -12,3 +12,5 @@ docker-compose.yml
 .env
 .envprod
 cloudbuild.yaml
+app.yaml
+static/

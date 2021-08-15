@@ -1,3 +1,4 @@
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import mixins
@@ -7,14 +8,13 @@ from .models import Event
 from .serializers import (EventSerializer, EventPostSerializer,
                             EventByCategorySerializer, EventListSerializer)
 from rest_framework import viewsets
-from django.shortcuts import get_object_or_404
 from rest_framework.settings import api_settings
 from rest_framework.decorators import action
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
-from categories.serializers import CategoryPostSerializer
 from accounts.models import Account
+
 
 class EventGenericViewSet(mixins.CreateModelMixin,
                         mixins.RetrieveModelMixin,
@@ -44,10 +44,13 @@ class EventGenericViewSet(mixins.CreateModelMixin,
         pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
         paginator = pagination_class()
 
-        list_events = Event.objects.all().order_by('-created_date')
-        events = paginator.paginate_queryset(list_events, request)
+        queryset = Event.objects.all().order_by('-created_date').prefetch_related('organizer')
 
-        serializer = EventSerializer(events, many=True)
+
+        events = paginator.paginate_queryset(queryset, request)
+
+        serializer = EventListSerializer(events, many=True)
+
         return Response({
             'Status': True,
             'Message': 'Wow it worked!',
@@ -69,10 +72,6 @@ class EventGenericViewSet(mixins.CreateModelMixin,
 
         if serializer.is_valid():
             serialized_data = serializer.data
-            # organizer = Account.objects.get(
-            #             username=serializer.data.get('organizer_username', None)
-            #             )
-            # print(organizer)
             serialized_data['organizer'] = Account.objects.get(
                                     username=serialized_data.pop('organizer_username', None)
                                     )
@@ -107,8 +106,8 @@ class EventGenericViewSet(mixins.CreateModelMixin,
         # serializer = EventByCategorySerializer(data=request.query_params)
         category_list = request.query_params.get('category_list', None)
 
-        request_serializer = CategoryPostSerializer(data=category_list,
-                                                    many=True)
+        # request_serializer = CategoryPostSerializer(data=category_list,
+        #                                             many=True)
 
 
         try:
@@ -130,3 +129,8 @@ class EventGenericViewSet(mixins.CreateModelMixin,
                 'Status': False,
                 'Message': str(e),
             }, status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(method='GET')
+    @action(detail=False, methods=['GET'])
+    def hello_world(self, request):
+        return Response({'Status': True})
