@@ -25,19 +25,19 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('SECRET_KEY') or 'asd123'
 
-DEBUG = os.getenv('DEBUG')
+DEBUG = os.getenv('DEBUG') or True
 
 
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME'),
-        'USER': os.getenv('DB_USER'),
-        'PASSWORD': os.getenv('DB_PASSWORD'),
-        'HOST': os.getenv('DB_HOST'),
-        'PORT': os.getenv('DB_PORT'),
+        'NAME': os.getenv('DB_NAME') or 'MyDatabase',
+        'USER': os.getenv('DB_USER') or 'root',
+        'PASSWORD': os.getenv('DB_PASSWORD') or '',
+        'HOST': os.getenv('DB_HOST') or 'localhost',
+        'PORT': os.getenv('DB_PORT') or '3306',
         'OPTIONS': {
             'charset': 'utf8mb4',
             'use_unicode': True,
