@@ -129,8 +129,3 @@ class EventGenericViewSet(mixins.CreateModelMixin,
                 'Status': False,
                 'Message': str(e),
             }, status=status.HTTP_400_BAD_REQUEST)
-
-    @swagger_auto_schema(method='GET')
-    @action(detail=False, methods=['GET'])
-    def hello_world(self, request):
-        return Response({'Status': True})
