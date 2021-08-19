@@ -4,25 +4,25 @@ from .serializers import (RegisterSerializer, AccountSerializer,
                             LoginSerializer, RequestVerifSerializer,
                             LoginReturnSerializer, EmailVerifSerializer,
                             OrganizationVerifSerializer)
-from rest_framework import viewsets, generics, mixins, status
+from rest_framework import viewsets, mixins, status
 from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-import json
-from django.forms.models import model_to_dict
+# import json
+# from django.forms.models import model_to_dict
 from rest_framework.settings import api_settings
 from .models import Account
-from django.contrib.auth.hashers import check_password
+# from django.contrib.auth.hashers import check_password
 from django.db.models import Q
-from .utils import Util
-from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
+# from .utils import Util
+# from rest_framework_simplejwt.tokens import RefreshToken
+# from django.contrib.sites.shortcuts import get_current_site
+# from django.urls import reverse
 from rest_framework.decorators import action
 import jwt
 from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-import base64
+# import base64
 
 
 
@@ -57,7 +57,6 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             'Data': paginator.get_paginated_response(serializer.data).data
         })
 
-        return Response(account_serializer.data)
 
 
     def create(self, request):
@@ -122,7 +121,7 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                     return Response({
                         'Status': False,
                         'Message': 'Email or Password is incorrect'
-                    })
+                    }, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 # token = RefreshToken.for_user(account).access_token
 
@@ -143,7 +142,7 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                 return Response({
                     'Status': False,
                     'Message': 'Email has not yet been verify, please check your email'
-                })
+                }, status=status.HTTP_401_UNAUTHORIZED)
 
 
         except Account.DoesNotExist:
