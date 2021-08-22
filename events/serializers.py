@@ -33,7 +33,8 @@ class EventListSerializer(serializers.ModelSerializer):
         fields = ['event_id',
                     'name',
                     'image',
-                    'organizer',]
+                    'organizer',
+                    'event_date']
 
 
 class EventPostSerializer(serializers.ModelSerializer):
