@@ -1,10 +1,10 @@
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 
-from .models import Event
+from .models import Event, EventImage
 from .serializers import (EventSerializer, EventPostSerializer,
                             EventByCategorySerializer, EventListSerializer)
 from rest_framework import viewsets
@@ -45,16 +45,14 @@ class EventGenericViewSet(mixins.CreateModelMixin,
         paginator = pagination_class()
 
         queryset = Event.objects.all().order_by('-created_date').prefetch_related('organizer')
+        serializer = EventListSerializer(queryset, many=True)
 
-
-        events = paginator.paginate_queryset(queryset, request)
-
-        serializer = EventListSerializer(events, many=True)
+        events = paginator.paginate_queryset(serializer.data, request)
 
         return Response({
             'Status': True,
             'Message': 'Wow it worked!',
-            'Data': paginator.get_paginated_response(serializer.data).data
+            'Data': paginator.get_paginated_response(events).data
         })
 
     def retrieve(self, request, pk=None):
@@ -75,11 +73,19 @@ class EventGenericViewSet(mixins.CreateModelMixin,
             serialized_data['organizer'] = Account.objects.get(
                                     username=serialized_data.pop('organizer_username', None)
                                     )
+
+            event_images = serialized_data.pop('images', [])
                                     
             category_list = serialized_data.pop('categories', [])
 
             event = Event.objects.create(**serialized_data)
             event.categories.set(category_list)
+
+
+            for image in event_images:
+                event_image = EventImage.objects.create(image_url=image, event=event)
+                event_image.save()
+            
             event.save()
 
             result_serializer = EventSerializer(instance=event)

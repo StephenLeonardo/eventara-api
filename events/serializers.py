@@ -1,10 +1,10 @@
+from django.db import models
 from rest_framework import serializers
-from .models import Event
+from .models import Event, EventImage
 
 from categories.serializers import CategorySerializer
 from organizers.serializers import OrganizerSerializer
 from accounts.serializers import AccountSerializer
-
 
 class EventSerializer(serializers.ModelSerializer):
     organizer = AccountSerializer()
@@ -15,7 +15,7 @@ class EventSerializer(serializers.ModelSerializer):
         fields = ['event_id',
                     'name',
                     'description',
-                    'image',
+                    'images',
                     'organizer',
                     'location',
                     'event_date',
@@ -30,21 +30,23 @@ class EventListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Event
+        # fields = '__all__'
         fields = ['event_id',
                     'name',
-                    'image',
+                    'images',
                     'organizer',
                     'event_date']
 
 
 class EventPostSerializer(serializers.ModelSerializer):
     organizer_username = serializers.CharField()
+    images = serializers.ListField(child=serializers.CharField())
 
     class Meta:
         model = Event
         fields = ['name',
                     'description',
-                    'image',
+                    'images',
                     'organizer_username',
                     'location',
                     'event_date',
