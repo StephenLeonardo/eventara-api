@@ -10,6 +10,14 @@ def id_gen():
     """Generates random string whose length is `ID_LENGTH`"""
     return int_to_base36(uuid.uuid4().int)[:6]
 
+
+# class EventImage(models.Model):
+#     event_image_id = models.CharField(max_length=gu)
+
+#     class Meta:
+#         db_table = "EventImages"
+
+
 # Create your models here.
 class Event(models.Model):
     event_id = models.CharField(max_length=6, primary_key=True, default=id_gen, editable=False)
@@ -21,7 +29,7 @@ class Event(models.Model):
     event_date = models.DateField(blank=True, null=True)
     event_start_time = models.TimeField(blank=True, null=True)
     event_end_time = models.TimeField(blank=True, null=True)
-    categories = models.ManyToManyField(Category, blank=True, null=True)
+    categories = models.ManyToManyField(Category, blank=True)
     is_online = models.BooleanField(default=False)
     registration_link = models.TextField(null=True, blank=True)
 
@@ -32,4 +40,4 @@ class Event(models.Model):
         return self.name
 
     class Meta:
-        db_table = "events"
+        db_table = "Events"
