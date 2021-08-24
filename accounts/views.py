@@ -110,7 +110,7 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
             if account.is_email_verified:
                 if account.check_password(password):
-                    get_serializer = AccountSerializer(account)
+                    get_serializer = LoginReturnSerializer(account)
 
                     return Response({
                         'Status': True,

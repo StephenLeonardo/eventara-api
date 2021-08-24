@@ -1,5 +1,5 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.tokens import RefreshToken
 import json
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -28,6 +28,8 @@ from rest_framework import serializers
 from .models import Account
 
 
+
+
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
@@ -38,6 +40,19 @@ class AccountSerializer(serializers.ModelSerializer):
                 'description',
                 'is_verified']
 
+class TokenSerializer(serializers.Serializer):
+    access_token = serializers.CharField()
+    refresh_token = serializers.CharField()
+
+
+class LoginTokenSerializer(serializers.ModelSerializer):
+    account = AccountSerializer()
+    # token = TokenSerializer()
+    class Meta:
+        model = Account
+        fields = ['account',
+                # 'token'
+                ]
 
 class AccountPostSerializer(serializers.ModelSerializer):
     class Meta:
@@ -73,18 +88,27 @@ class RequestVerifSerializer(serializers.Serializer):
 
 
 class LoginReturnSerializer(serializers.ModelSerializer):
-    access_token = serializers.CharField()
-    refresh_token = serializers.CharField()
+    token = serializers.SerializerMethodField()
+    account = serializers.SerializerMethodField()
+
+    @classmethod
+    def get_token(self, account):
+
+        token = {
+            'access_token': str(RefreshToken.for_user(account).access_token),
+            'refresh_token': str(RefreshToken.for_user(account))
+        }
+        return token
+
+    @classmethod
+    def get_account(self, account):
+        return AccountSerializer(account).data
+
     class Meta:
         model = Account
-        fields = ['id',
-                'username',
-                'email',
-                'profile_picture',
-                'description',
-                'is_verified',
-                'access_token',
-                'refresh_token']
+        fields = ['account',
+                'token',
+                ]
 
 class EmailVerifSerializer(serializers.Serializer):
     token = serializers.CharField()
