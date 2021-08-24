@@ -2,9 +2,7 @@ from django.db.models.query_utils import Q
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from accounts.models import Account
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .serializers import MyTokenObtainPairSerializer
+from rest_framework_simplejwt.views import TokenObtainPairView
 from rest_framework import status
 
 class MyTokenObtainPairView(TokenObtainPairView):
