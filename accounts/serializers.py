@@ -93,10 +93,10 @@ class LoginReturnSerializer(serializers.ModelSerializer):
 
     @classmethod
     def get_token(self, account):
-
+        refresh = RefreshToken.for_user(account)
         token = {
-            'access_token': str(RefreshToken.for_user(account).access_token),
-            'refresh_token': str(RefreshToken.for_user(account))
+            'access_token': str(refresh.access_token),
+            'refresh_token': str(refresh)
         }
         return token
 
