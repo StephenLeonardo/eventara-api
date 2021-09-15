@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 
 from .models import Event
 from .serializers import (EventSerializer, EventPostSerializer,
-                            EventByCategorySerializer, EventListSerializer)
+                            EventByCategorySerializer, EventListSerializer, EventPostUrlSerializer)
 from rest_framework import viewsets
 from rest_framework.settings import api_settings
 from rest_framework.decorators import action
@@ -75,6 +75,39 @@ class EventGenericViewSet(mixins.CreateModelMixin,
             serialized_data['organizer'] = Account.objects.get(
                                     username=serialized_data.pop('organizer_username', None)
                                     )
+            
+            file_blob = serialized_data.pop('file_blob', None)
+            if file_blob:
+                pass
+                                    
+            category_list = serialized_data.pop('categories', [])
+
+            event = Event.objects.create(**serialized_data)
+            event.categories.set(category_list)
+            event.save()
+
+            result_serializer = EventSerializer(instance=event)
+
+            return Response({
+                'Status': True,
+                'Message': 'Wow it worked!',
+                'Data': result_serializer.data,
+            })
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    
+    @swagger_auto_schema(method='POST')
+    @action(detail=False, methods=['POST'])
+    def create_with_image_url(self, request):
+        serializer = EventPostUrlSerializer(data=request.data)
+
+        if serializer.is_valid():
+            serialized_data = serializer.data
+            serialized_data['organizer'] = Account.objects.get(
+                                    username=serialized_data.pop('organizer_username', None)
+                                    )
                                     
             category_list = serialized_data.pop('categories', [])
 
@@ -94,11 +127,9 @@ class EventGenericViewSet(mixins.CreateModelMixin,
 
 
 
-
     category_id_param = openapi.Parameter('category_id', in_=openapi.IN_QUERY,
                          description='Category ID, you can specify more that one etc: ?category_id=2&category_id=3...',
                          type=openapi.TYPE_INTEGER, required=True)
-
     @swagger_auto_schema(manual_parameters=[category_id_param], method='GET')
     @action(detail=False, methods=['GET'])
     def get_by_categories(self, request):
