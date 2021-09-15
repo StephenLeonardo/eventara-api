@@ -175,6 +175,20 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 
+# Media Store in Bucket
+from google.oauth2 import service_account
+GS_CREDENTIALS = service_account.Credentials.from_service_account_file(os.path.join(BASE_DIR, 'credential.json'))
+
+
+# Configuration for media file storing
+DEFAULT_FILE_STORAGE = 'eventaraAPI.gcloud.GoogleCloudMediaFileStorage'
+GS_PROJECT_ID = 'event-316818'
+GS_BUCKET_NAME = 'eventara-images'
+MEDIA_ROOT = 'media/'
+UPLOAD_ROOT = 'media/uploads/'
+MEDIAL_URL = 'https://storage.googleapis.com/{}/'.format(GS_BUCKET_NAME)
+
+
 # CORS Configuration
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True

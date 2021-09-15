@@ -1,3 +1,4 @@
+import time
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,6 +15,9 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 from accounts.models import Account
+
+from storages.backends.gcloud import GoogleCloudStorage
+storage = GoogleCloudStorage()
 
 
 class EventGenericViewSet(mixins.CreateModelMixin,
@@ -75,10 +79,12 @@ class EventGenericViewSet(mixins.CreateModelMixin,
             serialized_data['organizer'] = Account.objects.get(
                                     username=serialized_data.pop('organizer_username', None)
                                     )
-            
-            file_blob = serialized_data.pop('file_blob', None)
-            if file_blob:
-                pass
+            image = request.FILES['image_blob']
+
+            if image:
+                month_year = time.strftime("%m-%Y")
+                path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+                serialized_data['image'] = path
                                     
             category_list = serialized_data.pop('categories', [])
 
