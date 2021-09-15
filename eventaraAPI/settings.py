@@ -70,6 +70,7 @@ INSTALLED_APPS = [
     'categories',
     'events',
     'organizers',
+    'jwttoken'
 ]
 
 MIDDLEWARE = [
