@@ -39,12 +39,10 @@ class EventListSerializer(serializers.ModelSerializer):
 
 class EventPostSerializer(serializers.ModelSerializer):
     organizer_username = serializers.CharField()
-    image_blob = serializers.FileField()
     class Meta:
         model = Event
         fields = ['name',
                     'description',
-                    'image_blob',
                     'organizer_username',
                     'location',
                     'event_date',
