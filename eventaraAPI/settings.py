@@ -120,8 +120,6 @@ from datetime import timedelta
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
-    'ALGORITHM': 'HS512',
-    'SIGNING_KEY': SECRET_KEY,
 }
 
 SWAGGER_SETTINGS = {
