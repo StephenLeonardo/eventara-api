@@ -178,7 +178,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
 
 # Media Store in Bucket
 
-# class Credentials(object):
 credentials = f'''{{
     "type":"{os.getenv('type')}",
     "project_id":"{os.getenv('project_id')}",
@@ -192,16 +191,9 @@ credentials = f'''{{
     "client_x509_cert_url":"{os.getenv('client_x509_cert_url')}",
 }}'''
 
-# print('heehehehehehehehh')
 import ast
-# print(ast.literal_eval(credentials))
-
-
 from google.oauth2 import service_account
 GS_CREDENTIALS = service_account.Credentials.from_service_account_info(ast.literal_eval(credentials))
-
-
-# print("YESSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS")
 
 
 # Configuration for media file storing
