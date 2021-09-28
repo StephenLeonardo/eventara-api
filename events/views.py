@@ -1,9 +1,11 @@
 import time
+import jwt
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework_simplejwt.backends import TokenBackend
 
 from .models import Event
 from .serializers import (EventSerializer, EventPostSerializer,
@@ -27,7 +29,7 @@ class EventGenericViewSet(mixins.CreateModelMixin,
                         mixins.ListModelMixin,
                         viewsets.GenericViewSet):
 
-    permission_classes = [AllowAny] # For development purposes
+    permission_classes = [IsAuthenticatedOrReadOnly, AllowAny] # For development purposes
     serializer_class = EventSerializer
     queryset = Event.objects.all()
 
@@ -73,22 +75,36 @@ class EventGenericViewSet(mixins.CreateModelMixin,
 
     def create(self, request):
         serializer = EventPostSerializer(data=request.data)
+        
+        # auth_header = request.headers.get('Authorization')
+        # jwt_token = auth_header.split(' ')[1]
+        # print('jejeejejejejjej')
+        # user_id = TokenBackend(algorithm='HS256').decode(jwt_token,verify=False)
+        # # user_id = jwt.decode(jwt_token,algorithms=['HS512'])
+        # print('jheehheheh')
+        # print(user_id)
+
+        # print(account)
+
 
         if serializer.is_valid():
             serialized_data = serializer.data
-            serialized_data['organizer'] = Account.objects.get(
-                                    username=serialized_data.pop('organizer_username', None)
-                                    )
-            image = request.FILES['image_blob']
+            # serialized_data['organizer'] = Account.objects.get(
+            #                         username=serialized_data.pop('organizer_username', None)
+            #                         )
 
-            if image:
-                month_year = time.strftime("%m-%Y")
-                path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-                serialized_data['image'] = path
+
+            if'image' in request.FILES:
+                image = request.FILES['image']
+
+                if image:
+                    month_year = time.strftime("%m-%Y")
+                    path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+                    serialized_data['image'] = path
                                     
             category_list = serialized_data.pop('categories', [])
 
-            event = Event.objects.create(**serialized_data)
+            event = Event.objects.create(**serialized_data, organizer=request.user)
             event.categories.set(category_list)
             event.save()
 
@@ -104,32 +120,32 @@ class EventGenericViewSet(mixins.CreateModelMixin,
 
 
     
-    @swagger_auto_schema(method='POST')
-    @action(detail=False, methods=['POST'])
-    def create_with_image_url(self, request):
-        serializer = EventPostUrlSerializer(data=request.data)
+    # @swagger_auto_schema(method='POST')
+    # @action(detail=False, methods=['POST'])
+    # def create_with_image_url(self, request):
+    #     serializer = EventPostUrlSerializer(data=request.data)
 
-        if serializer.is_valid():
-            serialized_data = serializer.data
-            serialized_data['organizer'] = Account.objects.get(
-                                    username=serialized_data.pop('organizer_username', None)
-                                    )
+    #     if serializer.is_valid():
+    #         serialized_data = serializer.data
+    #         serialized_data['organizer'] = Account.objects.get(
+    #                                 username=serialized_data.pop('organizer_username', None)
+    #                                 )
                                     
-            category_list = serialized_data.pop('categories', [])
+    #         category_list = serialized_data.pop('categories', [])
 
-            event = Event.objects.create(**serialized_data)
-            event.categories.set(category_list)
-            event.save()
+    #         event = Event.objects.create(**serialized_data)
+    #         event.categories.set(category_list)
+    #         event.save()
 
-            result_serializer = EventSerializer(instance=event)
+    #         result_serializer = EventSerializer(instance=event)
 
-            return Response({
-                'Status': True,
-                'Message': 'Wow it worked!',
-                'Data': result_serializer.data,
-            })
+    #         return Response({
+    #             'Status': True,
+    #             'Message': 'Wow it worked!',
+    #             'Data': result_serializer.data,
+    #         })
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
