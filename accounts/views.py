@@ -149,7 +149,7 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             return Response({
                 'Status': False,
                 'Message': 'Email or Password is incorrect'
-            })
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
 
     @swagger_auto_schema(request_body=RequestVerifSerializer, method='POST',
