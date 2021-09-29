@@ -26,18 +26,18 @@ from drf_yasg import openapi
 
 
 class AccountViewSet(viewsets.GenericViewSet):
-    serializer_class = AccountSerializer
+    serializer_class = RegisterSerializer
 
 
 
     def get_serializer_class(self):
-        if self.action == 'account' or self.action == 'retrieve':
+        if self.action == 'list' or self.action == 'retrieve':
             return AccountSerializer
         if self.action == 'create':
             return RegisterSerializer
 
     def get_permissions(self):
-        if self.action == 'account':
+        if self.action == 'list':
             permission_classes = [IsAuthenticated]
         else:
             permission_classes = [AllowAny]
@@ -61,10 +61,10 @@ class AccountViewSet(viewsets.GenericViewSet):
     #         'Data': paginator.get_paginated_response(serializer.data).data
     #     })
 
-    @swagger_auto_schema(method='GET',
-                operation_description="Get Account by JWT")
-    @action(methods=['get'], detail=False,permission_classes=[IsAuthenticated])
-    def account(self, request):
+    # @action(methods=['get'], detail=False,permission_classes=[IsAuthenticated])
+    # @swagger_auto_schema(method='GET',
+    #             operation_description="Get Account by JWT")
+    def list(self, request):
         serializer = self.get_serializer_class()
         try:            
             account = request.user
@@ -130,26 +130,26 @@ class AccountViewSet(viewsets.GenericViewSet):
     #             operation_description="Get Account by JWT")
     # @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
     # def get_by_jwt(self, request, token=None):
-        '''
-        Get Account by JWT
-        '''
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        try:
-            account = Account.objects.get(id=payload['user_id'])
-            ret_data = AccountSerializer(account)
+        # '''
+        # Get Account by JWT
+        # '''
+        # payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        # try:
+        #     account = Account.objects.get(id=payload['user_id'])
+        #     ret_data = AccountSerializer(account)
             
 
-            return Response({
-                'Status': True,
-                'Message': 'Wow it worked!',
-                'Data': ret_data
-            })
+        #     return Response({
+        #         'Status': True,
+        #         'Message': 'Wow it worked!',
+        #         'Data': ret_data
+        #     })
 
-        except Account.DoesNotExist:
-            return Response({
-                'Status': False,
-                'Message': 'Email or Password is incorrect'
-            }, status=status.HTTP_401_UNAUTHORIZED)
+        # except Account.DoesNotExist:
+        #     return Response({
+        #         'Status': False,
+        #         'Message': 'Email or Password is incorrect'
+        #     }, status=status.HTTP_401_UNAUTHORIZED)
         
         
         # if not account.is_email_verified:
