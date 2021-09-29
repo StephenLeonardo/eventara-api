@@ -4,8 +4,8 @@ from .serializers import (RegisterSerializer, AccountSerializer,
                             LoginSerializer, RequestVerifSerializer,
                             LoginReturnSerializer, EmailVerifSerializer,
                             OrganizationVerifSerializer)
-from rest_framework import viewsets, mixins, status
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework import serializers, viewsets, mixins, status
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 # import json
 # from django.forms.models import model_to_dict
@@ -17,7 +17,7 @@ from django.db.models import Q
 # from rest_framework_simplejwt.tokens import RefreshToken
 # from django.contrib.sites.shortcuts import get_current_site
 # from django.urls import reverse
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
 import jwt
 from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
@@ -25,37 +25,64 @@ from drf_yasg import openapi
 # import base64
 
 
-
-
-class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
-    permission_classes = [AllowAny]
-    serializer_class = RegisterSerializer
+class AccountViewSet(viewsets.GenericViewSet):
+    serializer_class = AccountSerializer
 
 
 
     def get_serializer_class(self):
-        if self.action == 'list' or self.action == 'retrieve':
+        if self.action == 'account' or self.action == 'retrieve':
             return AccountSerializer
         if self.action == 'create':
             return RegisterSerializer
+
+    def get_permissions(self):
+        if self.action == 'account':
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [AllowAny]
+        return [permission() for permission in permission_classes]
 
     def get_queryset(self):
         queryset = Account.objects.all()
 
 
-    def list(self, request):
-        pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
-        paginator = pagination_class()
+    # def list(self, request):
+    #     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+    #     paginator = pagination_class()
 
-        list_accounts = Account.objects.all()
-        accounts = paginator.paginate_queryset(list_accounts, request)
-        serializer = AccountSerializer(accounts, many=True)
+    #     list_accounts = Account.objects.all()
+    #     accounts = paginator.paginate_queryset(list_accounts, request)
+    #     serializer = AccountSerializer(accounts, many=True)
 
-        return Response({
-            'Status': True,
-            'Message': 'Wow it worked!',
-            'Data': paginator.get_paginated_response(serializer.data).data
-        })
+    #     return Response({
+    #         'Status': True,
+    #         'Message': 'Wow it worked!',
+    #         'Data': paginator.get_paginated_response(serializer.data).data
+    #     })
+
+    @swagger_auto_schema(method='GET',
+                operation_description="Get Account by JWT")
+    @action(methods=['get'], detail=False,permission_classes=[IsAuthenticated])
+    def account(self, request):
+        serializer = self.get_serializer_class()
+        try:            
+            account = request.user
+            ret_data = serializer(account).data
+            return Response({
+                'Status': True,
+                'Message': 'Wow it worked!',
+                'Data': ret_data
+            })
+
+
+        except Exception as ex:
+            return Response({
+                'Status': True,
+                'Message': ex
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
 
 
@@ -96,10 +123,45 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+ 
+ 
+
+    # @swagger_auto_schema(method='GET',
+    #             operation_description="Get Account by JWT")
+    # @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
+    # def get_by_jwt(self, request, token=None):
+        '''
+        Get Account by JWT
+        '''
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        try:
+            account = Account.objects.get(id=payload['user_id'])
+            ret_data = AccountSerializer(account)
+            
+
+            return Response({
+                'Status': True,
+                'Message': 'Wow it worked!',
+                'Data': ret_data
+            })
+
+        except Account.DoesNotExist:
+            return Response({
+                'Status': False,
+                'Message': 'Email or Password is incorrect'
+            }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        
+        # if not account.is_email_verified:
+        #     account.is_email_verified = True
+        # account.save()
+
+
+
     @swagger_auto_schema(request_body=LoginSerializer, method='POST',
                 operation_description="Log in with username/email and password")
     @action(methods=['POST'], detail=False, permission_classes=[AllowAny])
-    def log_in(self, request, **kwargs):
+    def login(self, request, **kwargs):
         email = request.data.get('email', None)
         password = request.data.get('password', None)
 
@@ -206,8 +268,6 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                     'Status': False,
                     'Message': 'Account not found!'
                 }, status=status.HTTP_404_NOT_FOUND)
-
-
 
 
 class VerifyEmail(viewsets.GenericViewSet):
