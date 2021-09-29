@@ -25,6 +25,12 @@ class TestSetUp(APITestCase):
             'password': 'string',
         }
 
+        self.user_login_data_false = {
+            'email': 'banned@gmail.com',
+            'password': '123'
+        }
+
+
         return super().setUp()
 
     def tearDown(self):
