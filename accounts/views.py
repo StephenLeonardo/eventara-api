@@ -46,24 +46,7 @@ class AccountViewSet(viewsets.GenericViewSet):
     def get_queryset(self):
         queryset = Account.objects.all()
 
-
-    # def list(self, request):
-    #     pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
-    #     paginator = pagination_class()
-
-    #     list_accounts = Account.objects.all()
-    #     accounts = paginator.paginate_queryset(list_accounts, request)
-    #     serializer = AccountSerializer(accounts, many=True)
-
-    #     return Response({
-    #         'Status': True,
-    #         'Message': 'Wow it worked!',
-    #         'Data': paginator.get_paginated_response(serializer.data).data
-    #     })
-
-    # @action(methods=['get'], detail=False,permission_classes=[IsAuthenticated])
-    # @swagger_auto_schema(method='GET',
-    #             operation_description="Get Account by JWT")
+    # Not a list, instead just returns one user from JWT
     def list(self, request):
         serializer = self.get_serializer_class()
         try:            
@@ -119,7 +102,6 @@ class AccountViewSet(viewsets.GenericViewSet):
                 'Message': 'Wow it worked!',
                 'Data': get_serializer.data,
             }, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -182,7 +164,7 @@ class AccountViewSet(viewsets.GenericViewSet):
                 else:
                     return Response({
                         'Status': False,
-                        'Message': 'Email or Password is incorrect'
+                        'Message': 'Email or Password is incorrect.'
                     }, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 # token = RefreshToken.for_user(account).access_token
@@ -203,14 +185,14 @@ class AccountViewSet(viewsets.GenericViewSet):
 
                 return Response({
                     'Status': False,
-                    'Message': 'Email has not yet been verify, please check your email'
+                    'Message': 'Email has not yet been verified, please check your email.'
                 }, status=status.HTTP_401_UNAUTHORIZED)
 
 
         except Account.DoesNotExist:
             return Response({
                 'Status': False,
-                'Message': 'Email or Password is incorrect'
+                'Message': 'Email or Password is incorrect.'
             }, status=status.HTTP_401_UNAUTHORIZED)
 
 

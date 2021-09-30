@@ -46,8 +46,12 @@ def id_gen():
 class Account(AbstractBaseUser, PermissionsMixin):
     id = models.CharField(max_length=10, primary_key=True,
                                     default=id_gen, editable=False)
-    username = models.CharField(max_length=100, unique=True)
-    email = models.EmailField(max_length=255, unique=True)
+    username = models.CharField(max_length=100, unique=True, error_messages={
+        'unique': 'Account with this username already exists.'
+    })
+    email = models.EmailField(max_length=255, unique=True, error_messages={
+        'unique': 'Account with this email already exists.'
+    })
     password = models.CharField(max_length=255)
     description = models.TextField(max_length=None, blank=True, null=True)
     profile_picture = models.CharField(max_length=255, blank=True, null=True)
