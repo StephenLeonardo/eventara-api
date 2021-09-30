@@ -50,7 +50,16 @@ class EventGenericViewSet(mixins.CreateModelMixin,
         pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
         paginator = pagination_class()
 
-        queryset = Event.objects.all().order_by('-created_date').prefetch_related('organizer')
+        queryset = None
+
+        category_list = request.query_params.get('category_id', [])
+        if  len(category_list) > 0:
+            category_list = list(map(int, category_list.split(',')))
+            queryset = Event.objects.filter(
+                                        categories__in=category_list).order_by('-created_date').prefetch_related('organizer')
+        else:
+            queryset = Event.objects.all().order_by('-created_date').prefetch_related('organizer')
+        
 
 
         events = paginator.paginate_queryset(queryset, request)
@@ -149,36 +158,40 @@ class EventGenericViewSet(mixins.CreateModelMixin,
 
 
 
-    category_id_param = openapi.Parameter('category_id', in_=openapi.IN_QUERY,
-                         description='Category ID, you can specify more that one etc: ?category_id=2&category_id=3...',
-                         type=openapi.TYPE_INTEGER, required=True)
-    @swagger_auto_schema(manual_parameters=[category_id_param], method='GET')
-    @action(detail=False, methods=['GET'])
-    def get_by_categories(self, request):
+    # category_id_param = openapi.Parameter('category_id', in_=openapi.IN_QUERY,
+    #                      description='Category ID, you can specify more that one etc: ?category_id=2&category_id=3...',
+    #                      type=openapi.TYPE_INTEGER, required=True)
+    # @swagger_auto_schema(manual_parameters=[category_id_param], method='GET')
+    # @action(detail=False, methods=['GET'])
+    # def get_by_categories(self, request):
 
-        # serializer = EventByCategorySerializer(data=request.query_params)
-        category_list = request.query_params.get('category_list', None)
+    #     # serializer = EventByCategorySerializer(data=request.query_params)
+    #     category_list = request.query_params.get('category_id', [])
+    #     if  len(category_list) > 0:
+    #         category_list = list(map(int, category_list.split(',')))
+    #     print(category_list)
 
-        # request_serializer = CategoryPostSerializer(data=category_list,
-        #                                             many=True)
+
+    #     # request_serializer = CategoryPostSerializer(data=category_list,
+    #     #                                             many=True)
 
 
-        try:
-            pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
-            paginator = pagination_class()
+    #     try:
+    #         pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
+    #         paginator = pagination_class()
 
-            list_events = Event.objects.filter(
-                                        categories__in=category_list).order_by('-created_date')
-            events = paginator.paginate_queryset(list_events, request)
+    #         list_events = Event.objects.filter(
+    #                                     categories__in=category_list).order_by('-created_date')
+    #         events = paginator.paginate_queryset(list_events, request)
 
-            serializer = EventSerializer(events, many=True)
-            return Response({
-                'Status': True,
-                'Message': 'Wow it worked!',
-                'Data': paginator.get_paginated_response(serializer.data).data
-            })
-        except Exception as e:
-            return Response({
-                'Status': False,
-                'Message': str(e),
-            }, status=status.HTTP_400_BAD_REQUEST)
+    #         serializer = EventSerializer(events, many=True)
+    #         return Response({
+    #             'Status': True,
+    #             'Message': 'Wow it worked!',
+    #             'Data': paginator.get_paginated_response(serializer.data).data
+    #         })
+    #     except Exception as e:
+    #         return Response({
+    #             'Status': False,
+    #             'Message': str(e),
+    #         }, status=status.HTTP_400_BAD_REQUEST)
