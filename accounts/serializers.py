@@ -38,7 +38,9 @@ class AccountSerializer(serializers.ModelSerializer):
                 'email',
                 'profile_picture',
                 'description',
-                'is_verified']
+                'is_verified',
+                'is_organizer',
+                'is_staff']
 
 class TokenSerializer(serializers.Serializer):
     access_token = serializers.CharField()

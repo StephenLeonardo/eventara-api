@@ -7,7 +7,7 @@ router = DefaultRouter()
 
 # router.register('', views.AccountViewSet.as_view({'get': 'account'}), basename="account"),
 router.register('', views.AccountViewSet, basename='account')
-router.register('verify-email', views.VerifyEmail, basename='verify-email')
+router.register('email-verification', views.EmailVerification, basename='email-verification')
 router.register('verify-organization', views.VerifyOrganization,
                     basename='verify-organization')
 router.register('verify-email-backdoor', views.VerifyEmailBackDoor,

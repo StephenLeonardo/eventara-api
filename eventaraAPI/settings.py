@@ -216,3 +216,17 @@ if DEBUG:
    STATIC_ROOT = os.path.join(BASE_DIR, '/static')
 else:
    STATIC_ROOT = os.path.join(BASE_DIR, 'static') 
+
+
+
+# Mail Configuration
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_USE_TLS = True
+EMAIL_USE_SSL = False
+
+
+# Frontend Configuration
+FRONTEND_URL=os.getenv('FRONTEND_URL')

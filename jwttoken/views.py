@@ -15,7 +15,7 @@ class MyTokenObtainPairView(TokenObtainPairView):
             account = Account.objects.get((Q(username=email) | Q(email=email))
                                             & Q(is_active=True))
 
-            if account.is_email_verified:
+            if account.is_verified:
                 if account.check_password(password):
                     refresh = RefreshToken.for_user(account)
 
@@ -38,7 +38,7 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
             return Response({
                 'Status': False,
-                'Message': 'Email has not yet been verify, please check your email'
+                'Message': 'Email has not yet been verified, please check your email'
             }, status=status.HTTP_401_UNAUTHORIZED)
     
         return Response({
