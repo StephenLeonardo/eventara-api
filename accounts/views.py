@@ -1,3 +1,4 @@
+from datetime import timedelta
 from django.shortcuts import render
 # from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import (RegisterSerializer, AccountSerializer,
@@ -13,15 +14,16 @@ from rest_framework.settings import api_settings
 from .models import Account
 # from django.contrib.auth.hashers import check_password
 from django.db.models import Q
-# from .utils import Util
-# from rest_framework_simplejwt.tokens import RefreshToken
-# from django.contrib.sites.shortcuts import get_current_site
-# from django.urls import reverse
+from .utils import Util
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.sites.shortcuts import get_current_site
+from django.urls import reverse
 from rest_framework.decorators import action, permission_classes
 import jwt
 from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from django.template.loader import render_to_string
 # import base64
 
 
@@ -81,21 +83,16 @@ class AccountViewSet(viewsets.GenericViewSet):
             get_serializer = AccountSerializer(account)
 
 
-            # token = RefreshToken.for_user(account).access_token
-
-            # current_site = get_current_site(request).domain
-            # relative_link = reverse('verify-email-verify')
-            # abs_url = request.is_secure() and "https" or "http" + '://'+current_site+relative_link+"?token="+str(token)
-            # email_body = 'Hi {}. Use the link below to verify your email:\n{}'.format(account.username, abs_url)
-
-            # data = {
-            #     'email_body': email_body,
-            #     'email_subject': 'Evehunt - Verify your Email',
-            #     'email_to': account.email
-            # }
-
-            # Util.send_verification_email(data)
-
+            token = RefreshToken.for_user(account).access_token
+            token.set_exp(lifetime=timedelta(days=10))
+            abs_url = f'{settings.FRONTEND_URL}email-verification/?token={str(token)}'
+            msg_html = render_to_string('verification_email_template.html', {'redirect_url': abs_url, 'username': account.username})
+            data = {
+                'email_body': msg_html,
+                'email_subject': 'Evehunt - Verify your Email',
+                'email_to': [account.email]
+            }
+            Util.send_verification_email(data)
 
             return Response({
                 'Status': True,
@@ -134,8 +131,8 @@ class AccountViewSet(viewsets.GenericViewSet):
         #     }, status=status.HTTP_401_UNAUTHORIZED)
         
         
-        # if not account.is_email_verified:
-        #     account.is_email_verified = True
+        # if not account.is_verified:
+        #     account.is_verified = True
         # account.save()
 
 
@@ -152,7 +149,7 @@ class AccountViewSet(viewsets.GenericViewSet):
             account = Account.objects.get((Q(username=email) | Q(email=email))
                                         & Q(is_active=True))
 
-            if account.is_email_verified:
+            if account.is_verified:
                 if account.check_password(password):
                     get_serializer = LoginReturnSerializer(account)
 
@@ -167,20 +164,16 @@ class AccountViewSet(viewsets.GenericViewSet):
                         'Message': 'Email or Password is incorrect.'
                     }, status=status.HTTP_401_UNAUTHORIZED)
             else:
-                # token = RefreshToken.for_user(account).access_token
-
-                # current_site = get_current_site(request).domain
-                # relative_link = reverse('verify-email-verify')
-                # abs_url = request.is_secure() and "https" or "http" + '://'+current_site+relative_link+"?token="+str(token)
-                # email_body = 'Hi {}. Use the link below to verify your email:\n{}'.format(account.username, abs_url)
-
-                # data = {
-                #     'email_body': email_body,
-                #     'email_subject': 'Evehunt - Verify your Email',
-                #     'email_to': account.email
-                # }
-
-                # Util.send_verification_email(data)
+                token = RefreshToken.for_user(account).access_token
+                token.set_exp(lifetime=timedelta(days=10))
+                abs_url = f'{settings.FRONTEND_URL}email-verification/?token={str(token)}'
+                msg_html = render_to_string('verification_email_template.html', {'redirect_url': abs_url, 'username': account.username})
+                data = {
+                    'email_body': msg_html,
+                    'email_subject': 'Evehunt - Verify your Email',
+                    'email_to': [account.email]
+                }
+                Util.send_verification_email(data)
 
 
                 return Response({
@@ -252,23 +245,22 @@ class AccountViewSet(viewsets.GenericViewSet):
                 }, status=status.HTTP_404_NOT_FOUND)
 
 
-class VerifyEmail(viewsets.GenericViewSet):
+class EmailVerification(viewsets.GenericViewSet):
 
     serializer_class = EmailVerifSerializer
 
-    token_param_config = openapi.Parameter('token', in_=openapi.IN_QUERY,
-                         description='Description', type=openapi.TYPE_STRING,
-                         required=True)
-
-    @swagger_auto_schema(manual_parameters=[token_param_config], method='POST')
-    @action(methods=['POST'], detail=False)
-    def verify(self, request):
+    # token_param_config = openapi.Parameter('token', in_=openapi.IN_QUERY,
+    #                      description='Description', type=openapi.TYPE_STRING,
+    #                      required=True)
+    # @swagger_auto_schema(manual_parameters=[token_param_config], method='POST')
+    # @action(methods=['POST'], detail=False)
+    def create(self, request):
         token = request.data.get('token', None)
         try:
             payload =   jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             account = Account.objects.get(id=payload['user_id'])
-            if not account.is_email_verified:
-                account.is_email_verified = True
+            if not account.is_verified:
+                account.is_verified = True
             account.save()
 
             result_serializer = AccountSerializer(account)
@@ -353,8 +345,6 @@ class VerifyEmailBackDoor(viewsets.GenericViewSet):
 
             if not account.is_verified:
                 account.is_verified = True
-            if not account.is_email_verified:
-                account.is_email_verified = True
 
             account.save()
 
