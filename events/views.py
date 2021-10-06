@@ -1,22 +1,15 @@
 import time
-import jwt
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
-from rest_framework_simplejwt.backends import TokenBackend
-
 from .models import Event
 from .serializers import (EventSerializer, EventPostSerializer,
                             EventByCategorySerializer, EventListSerializer, EventPostUrlSerializer)
 from rest_framework import viewsets
 from rest_framework.settings import api_settings
-from rest_framework.decorators import action
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-
-from accounts.models import Account
+from django.conf import settings
 
 from storages.backends.gcloud import GoogleCloudStorage
 storage = GoogleCloudStorage()
@@ -109,7 +102,8 @@ class EventGenericViewSet(mixins.CreateModelMixin,
                 if image:
                     month_year = time.strftime("%m-%Y")
                     path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-                    serialized_data['image'] = path
+                    full_path = '{}{}'.format(settings.MEDIA_URL, path)
+                    serialized_data['image'] = full_path
                                     
             category_list = serialized_data.pop('categories', [])
 

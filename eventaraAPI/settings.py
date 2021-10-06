@@ -210,3 +210,9 @@ CORS_ALLOW_CREDENTIALS = True
 
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+if DEBUG: 
+   STATIC_ROOT = os.path.join(BASE_DIR, '/static')
+else:
+   STATIC_ROOT = os.path.join(BASE_DIR, 'static') 
