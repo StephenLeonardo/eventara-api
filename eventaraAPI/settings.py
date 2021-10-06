@@ -201,7 +201,7 @@ GS_PROJECT_ID = 'event-316818'
 GS_BUCKET_NAME = 'eventara-images'
 MEDIA_ROOT = 'media/'
 UPLOAD_ROOT = 'media/uploads/'
-MEDIAL_URL = 'https://storage.googleapis.com/{}/'.format(GS_BUCKET_NAME)
+MEDIA_URL = 'https://storage.googleapis.com/{}/'.format(GS_BUCKET_NAME)
 
 
 # CORS Configuration

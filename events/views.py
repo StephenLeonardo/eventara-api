@@ -80,13 +80,13 @@ class EventGenericViewSet(mixins.CreateModelMixin,
         
         # auth_header = request.headers.get('Authorization')
         # jwt_token = auth_header.split(' ')[1]
-        # print('jejeejejejejjej')
+        # 
         # user_id = TokenBackend(algorithm='HS256').decode(jwt_token,verify=False)
         # # user_id = jwt.decode(jwt_token,algorithms=['HS512'])
-        # print('jheehheheh')
-        # print(user_id)
+        # 
+        # 
 
-        # print(account)
+        # 
 
 
         if serializer.is_valid():
@@ -94,6 +94,8 @@ class EventGenericViewSet(mixins.CreateModelMixin,
             # serialized_data['organizer'] = Account.objects.get(
             #                         username=serialized_data.pop('organizer_username', None)
             #                         )
+
+            
 
 
             if'image' in request.FILES:
@@ -163,7 +165,7 @@ class EventGenericViewSet(mixins.CreateModelMixin,
     #     category_list = request.query_params.get('category_id', [])
     #     if  len(category_list) > 0:
     #         category_list = list(map(int, category_list.split(',')))
-    #     print(category_list)
+    #     
 
 
     #     # request_serializer = CategoryPostSerializer(data=category_list,
