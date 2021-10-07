@@ -89,7 +89,7 @@ class AccountViewSet(viewsets.GenericViewSet):
             msg_html = render_to_string('verification_email_template.html', {'redirect_url': abs_url, 'username': account.username})
             data = {
                 'email_body': msg_html,
-                'email_subject': 'Evehunt - Verify your Email',
+                'email_subject': 'Eventara - Verify your Email',
                 'email_to': [account.email]
             }
             Util.send_verification_email(data)
@@ -170,7 +170,7 @@ class AccountViewSet(viewsets.GenericViewSet):
                 msg_html = render_to_string('verification_email_template.html', {'redirect_url': abs_url, 'username': account.username})
                 data = {
                     'email_body': msg_html,
-                    'email_subject': 'Evehunt - Verify your Email',
+                    'email_subject': 'Eventara - Verify your Email',
                     'email_to': [account.email]
                 }
                 Util.send_verification_email(data)
@@ -225,7 +225,7 @@ class AccountViewSet(viewsets.GenericViewSet):
 
                 # data = {
                 #     'email_body': email_body,
-                #     'email_subject': 'Evehunt - Request Organization Verification',
+                #     'email_subject': 'Eventara - Request Organization Verification',
                 #     'email_to': settings.ADMIN_EMAIL
                 # }
 
