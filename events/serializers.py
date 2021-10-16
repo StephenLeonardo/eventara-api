@@ -38,13 +38,28 @@ class EventListSerializer(serializers.ModelSerializer):
 
 
 class EventPostSerializer(serializers.ModelSerializer):
-    organizer_username = serializers.CharField()
-
+    # organizer_username = serializers.CharField()
     class Meta:
         model = Event
         fields = ['name',
                     'description',
-                    'image',
+                    # 'organizer_username',
+                    'location',
+                    'event_date',
+                    'event_start_time',
+                    'event_end_time',
+                    'categories',
+                    'is_online',
+                    'registration_link']
+
+
+class EventPostUrlSerializer(serializers.ModelSerializer):
+    organizer_username = serializers.CharField()
+    class Meta:
+        model = Event
+        fields = ['name',
+                    'description',
+                    'image_url',
                     'organizer_username',
                     'location',
                     'event_date',

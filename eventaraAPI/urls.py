@@ -19,7 +19,9 @@ from rest_framework_simplejwt import views as jwt_views
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
-
+from jwttoken.views import MyTokenObtainPairView
+import django.views.static
+from django.conf import settings
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -42,7 +44,7 @@ urlpatterns = [
     
     
     
-    path('api/token/', jwt_views.TokenObtainPairView.as_view(),
+    path('api/token/', MyTokenObtainPairView.as_view(),
             name='token_obtain_pair'),
     path('api/token/refresh/', jwt_views.TokenRefreshView.as_view(),
             name='token_refresh'),
@@ -50,4 +52,5 @@ urlpatterns = [
             name='schema-swagger-ui'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0),
             name='schema-redoc'),
+    path('static/<path>/', django.views.static.serve, {'document_root': settings.STATIC_ROOT, 'show_indexes': settings.DEBUG})
 ]

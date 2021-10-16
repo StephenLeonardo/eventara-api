@@ -44,3 +44,6 @@ class TestViews(TestSetUp):
         res = self.client.post(self.login_url, self.user_login_data, format='json')
         self.assertEqual(res.status_code, 200)
 
+    def test_user_login_incorrect_email(self):
+        res = self.client.post(self.login_url, self.user_login_data_false, format='json')
+        self.assertEqual(res.status_code, 401)

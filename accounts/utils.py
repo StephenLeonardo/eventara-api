@@ -8,7 +8,10 @@ class Util:
         
         email = EmailMessage(subject=data['email_subject'],
                              body=data['email_body'],
-                             to=[data['email_to']])
+                             from_email='no-reply@eventara.id',
+                             to=data['email_to'])
+
+        email.content_subtype = 'html'
                              
         email.send()
         
