@@ -1,34 +1,33 @@
+from datetime import timedelta
 from django.shortcuts import render
 # from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import (RegisterSerializer, AccountSerializer,
                             LoginSerializer, RequestVerifSerializer,
                             LoginReturnSerializer, EmailVerifSerializer,
                             OrganizationVerifSerializer)
-from rest_framework import viewsets, generics, mixins, status
-from rest_framework.permissions import AllowAny, IsAuthenticatedOrReadOnly
+from rest_framework import serializers, viewsets, mixins, status
+from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-import json
-from django.forms.models import model_to_dict
+# import json
+# from django.forms.models import model_to_dict
 from rest_framework.settings import api_settings
 from .models import Account
-from django.contrib.auth.hashers import check_password
+# from django.contrib.auth.hashers import check_password
 from django.db.models import Q
 from .utils import Util
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
-from rest_framework.decorators import action
+from rest_framework.decorators import action, permission_classes
 import jwt
 from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-import base64
+from django.template.loader import render_to_string
+# import base64
 
 
-
-
-class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
-    permission_classes = [AllowAny]
+class AccountViewSet(viewsets.GenericViewSet):
     serializer_class = RegisterSerializer
 
 
@@ -39,25 +38,37 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
         if self.action == 'create':
             return RegisterSerializer
 
+    def get_permissions(self):
+        if self.action == 'list':
+            permission_classes = [IsAuthenticated]
+        else:
+            permission_classes = [AllowAny]
+        return [permission() for permission in permission_classes]
+
     def get_queryset(self):
         queryset = Account.objects.all()
 
-
+    # Not a list, instead just returns one user from JWT
     def list(self, request):
-        pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
-        paginator = pagination_class()
+        serializer = self.get_serializer_class()
+        try:            
+            account = request.user
+            ret_data = serializer(account).data
+            return Response({
+                'Status': True,
+                'Message': 'Wow it worked!',
+                'Data': ret_data
+            })
 
-        list_accounts = Account.objects.all()
-        accounts = paginator.paginate_queryset(list_accounts, request)
-        serializer = AccountSerializer(accounts, many=True)
 
-        return Response({
-            'Status': True,
-            'Message': 'Wow it worked!',
-            'Data': paginator.get_paginated_response(serializer.data).data
-        })
+        except Exception as ex:
+            return Response({
+                'Status': True,
+                'Message': ex
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-        return Response(account_serializer.data)
+
+
 
 
     def create(self, request):
@@ -72,35 +83,64 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             get_serializer = AccountSerializer(account)
 
 
-            # token = RefreshToken.for_user(account).access_token
-
-            # current_site = get_current_site(request).domain
-            # relative_link = reverse('verify-email-verify')
-            # abs_url = request.is_secure() and "https" or "http" + '://'+current_site+relative_link+"?token="+str(token)
-            # email_body = 'Hi {}. Use the link below to verify your email:\n{}'.format(account.username, abs_url)
-
-            # data = {
-            #     'email_body': email_body,
-            #     'email_subject': 'Evehunt - Verify your Email',
-            #     'email_to': account.email
-            # }
-
-            # Util.send_verification_email(data)
-
+            token = RefreshToken.for_user(account).access_token
+            token.set_exp(lifetime=timedelta(days=10))
+            abs_url = f'{settings.FRONTEND_URL}email-verification/?token={str(token)}'
+            msg_html = render_to_string('verification_email_template.html', {'redirect_url': abs_url, 'username': account.username})
+            data = {
+                'email_body': msg_html,
+                'email_subject': 'Eventara - Verify your Email',
+                'email_to': [account.email]
+            }
+            Util.send_verification_email(data)
 
             return Response({
                 'Status': True,
                 'Message': 'Wow it worked!',
                 'Data': get_serializer.data,
             }, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+ 
+ 
+
+    # @swagger_auto_schema(method='GET',
+    #             operation_description="Get Account by JWT")
+    # @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
+    # def get_by_jwt(self, request, token=None):
+        # '''
+        # Get Account by JWT
+        # '''
+        # payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+        # try:
+        #     account = Account.objects.get(id=payload['user_id'])
+        #     ret_data = AccountSerializer(account)
+            
+
+        #     return Response({
+        #         'Status': True,
+        #         'Message': 'Wow it worked!',
+        #         'Data': ret_data
+        #     })
+
+        # except Account.DoesNotExist:
+        #     return Response({
+        #         'Status': False,
+        #         'Message': 'Email or Password is incorrect'
+        #     }, status=status.HTTP_401_UNAUTHORIZED)
+        
+        
+        # if not account.is_verified:
+        #     account.is_verified = True
+        # account.save()
+
 
 
     @swagger_auto_schema(request_body=LoginSerializer, method='POST',
                 operation_description="Log in with username/email and password")
     @action(methods=['POST'], detail=False, permission_classes=[AllowAny])
-    def log_in(self, request, **kwargs):
+    def login(self, request, **kwargs):
         email = request.data.get('email', None)
         password = request.data.get('password', None)
 
@@ -109,9 +149,9 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
             account = Account.objects.get((Q(username=email) | Q(email=email))
                                         & Q(is_active=True))
 
-            if account.is_email_verified:
+            if account.is_verified:
                 if account.check_password(password):
-                    get_serializer = AccountSerializer(account)
+                    get_serializer = LoginReturnSerializer(account)
 
                     return Response({
                         'Status': True,
@@ -121,36 +161,32 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                 else:
                     return Response({
                         'Status': False,
-                        'Message': 'Email or Password is incorrect'
-                    })
+                        'Message': 'Email or Password is incorrect.'
+                    }, status=status.HTTP_401_UNAUTHORIZED)
             else:
-                # token = RefreshToken.for_user(account).access_token
-
-                # current_site = get_current_site(request).domain
-                # relative_link = reverse('verify-email-verify')
-                # abs_url = request.is_secure() and "https" or "http" + '://'+current_site+relative_link+"?token="+str(token)
-                # email_body = 'Hi {}. Use the link below to verify your email:\n{}'.format(account.username, abs_url)
-
-                # data = {
-                #     'email_body': email_body,
-                #     'email_subject': 'Evehunt - Verify your Email',
-                #     'email_to': account.email
-                # }
-
-                # Util.send_verification_email(data)
+                token = RefreshToken.for_user(account).access_token
+                token.set_exp(lifetime=timedelta(days=10))
+                abs_url = f'{settings.FRONTEND_URL}email-verification/?token={str(token)}'
+                msg_html = render_to_string('verification_email_template.html', {'redirect_url': abs_url, 'username': account.username})
+                data = {
+                    'email_body': msg_html,
+                    'email_subject': 'Eventara - Verify your Email',
+                    'email_to': [account.email]
+                }
+                Util.send_verification_email(data)
 
 
                 return Response({
                     'Status': False,
-                    'Message': 'Email has not yet been verify, please check your email'
-                })
+                    'Message': 'Email has not yet been verified, please check your email.'
+                }, status=status.HTTP_401_UNAUTHORIZED)
 
 
         except Account.DoesNotExist:
             return Response({
                 'Status': False,
-                'Message': 'Email or Password is incorrect'
-            })
+                'Message': 'Email or Password is incorrect.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
 
     @swagger_auto_schema(request_body=RequestVerifSerializer, method='POST',
@@ -189,7 +225,7 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
 
                 # data = {
                 #     'email_body': email_body,
-                #     'email_subject': 'Evehunt - Request Organization Verification',
+                #     'email_subject': 'Eventara - Request Organization Verification',
                 #     'email_to': settings.ADMIN_EMAIL
                 # }
 
@@ -209,25 +245,22 @@ class AccountViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
                 }, status=status.HTTP_404_NOT_FOUND)
 
 
-
-
-class VerifyEmail(viewsets.GenericViewSet):
+class EmailVerification(viewsets.GenericViewSet):
 
     serializer_class = EmailVerifSerializer
 
-    token_param_config = openapi.Parameter('token', in_=openapi.IN_QUERY,
-                         description='Description', type=openapi.TYPE_STRING,
-                         required=True)
-
-    @swagger_auto_schema(manual_parameters=[token_param_config], method='POST')
-    @action(methods=['POST'], detail=False)
-    def verify(self, request):
+    # token_param_config = openapi.Parameter('token', in_=openapi.IN_QUERY,
+    #                      description='Description', type=openapi.TYPE_STRING,
+    #                      required=True)
+    # @swagger_auto_schema(manual_parameters=[token_param_config], method='POST')
+    # @action(methods=['POST'], detail=False)
+    def create(self, request):
         token = request.data.get('token', None)
         try:
             payload =   jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             account = Account.objects.get(id=payload['user_id'])
-            if not account.is_email_verified:
-                account.is_email_verified = True
+            if not account.is_verified:
+                account.is_verified = True
             account.save()
 
             result_serializer = AccountSerializer(account)
@@ -312,8 +345,6 @@ class VerifyEmailBackDoor(viewsets.GenericViewSet):
 
             if not account.is_verified:
                 account.is_verified = True
-            if not account.is_email_verified:
-                account.is_email_verified = True
 
             account.save()
 

@@ -8,5 +8,5 @@ class Category(models.Model):
         return self.name
     
     class Meta:
-        db_table = "categories"
-        verbose_name_plural = "categories"
+        db_table = "Categories"
+        verbose_name_plural = "Categories"

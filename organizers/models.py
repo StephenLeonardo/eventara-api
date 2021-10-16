@@ -19,4 +19,4 @@ class Organizer(models.Model):
     
     
     class Meta:
-        db_table = "organizers"
+        db_table = "Organizers"
