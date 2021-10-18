@@ -1,7 +1,7 @@
 import time
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from .models import Event
@@ -15,11 +15,7 @@ from storages.backends.gcloud import GoogleCloudStorage
 storage = GoogleCloudStorage()
 
 
-class EventGenericViewSet(mixins.CreateModelMixin,
-                        mixins.RetrieveModelMixin,
-                        mixins.UpdateModelMixin,
-                        mixins.DestroyModelMixin,
-                        mixins.ListModelMixin,
+class EventGenericViewSet(mixins.DestroyModelMixin,
                         viewsets.GenericViewSet):
 
     permission_classes = [IsAuthenticatedOrReadOnly, AllowAny] # For development purposes
@@ -77,6 +73,7 @@ class EventGenericViewSet(mixins.CreateModelMixin,
 
     def create(self, request):
         serializer = EventPostSerializer(data=request.data)
+
         
         # auth_header = request.headers.get('Authorization')
         # jwt_token = auth_header.split(' ')[1]
@@ -86,7 +83,9 @@ class EventGenericViewSet(mixins.CreateModelMixin,
         # 
         # 
 
-        # 
+        #
+        # category_list = serializer.data.pop('categories', [])
+        # print('ahahahhaha' + str(category_list))
 
 
         if serializer.is_valid():
@@ -110,7 +109,8 @@ class EventGenericViewSet(mixins.CreateModelMixin,
             category_list = serialized_data.pop('categories', [])
 
             event = Event.objects.create(**serialized_data, organizer=request.user)
-            event.categories.set(category_list)
+            if not category_list:
+                event.categories.set(category_list)
             event.save()
 
             result_serializer = EventSerializer(instance=event)
@@ -119,10 +119,50 @@ class EventGenericViewSet(mixins.CreateModelMixin,
                 'Status': True,
                 'Message': 'Wow it worked!',
                 'Data': result_serializer.data,
-            })
+            }, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+    def update(self, request, pk=None):
+        serializer = EventPostSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            serialized_data = serializer.data
+            instance = self.get_object()
+
+            if'image' in request.FILES:
+                image = request.FILES['image']
+
+                if image:
+                    month_year = time.strftime("%m-%Y")
+                    path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+                    full_path = '{}{}'.format(settings.MEDIA_URL, path)
+                    serialized_data['image'] = full_path
+
+            category_list = serialized_data.pop('categories', [])
+
+
+            instance = self.get_object()            
+            
+            instance.categories.set(category_list)
+            # instance.save()
+
+            result_serializer = EventSerializer(instance=instance)
+
+            if result_serializer.is_valid():
+                result_serializer.save()
+
+                return Response({
+                    'Status': True,
+                    'Message': 'Wow it worked!',
+                    'Data': result_serializer.data,
+                }, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        
+                
 
     
     # @swagger_auto_schema(method='POST')
