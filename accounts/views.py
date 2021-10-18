@@ -1,25 +1,22 @@
 from datetime import timedelta
-from django.shortcuts import render
+from rest_framework.decorators import action
 # from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import (RegisterSerializer, AccountSerializer,
                             LoginSerializer, RequestVerifSerializer,
                             LoginReturnSerializer, EmailVerifSerializer,
                             OrganizationVerifSerializer)
-from rest_framework import serializers, viewsets, status
+from rest_framework import status
 from rest_framework.mixins import (DestroyModelMixin)
+from rest_framework.viewsets import GenericViewSet
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 # import json
 # from django.forms.models import model_to_dict
-from rest_framework.settings import api_settings
 from .models import Account
 # from django.contrib.auth.hashers import check_password
 from django.db.models import Q
 from .utils import Util
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.contrib.sites.shortcuts import get_current_site
-from django.urls import reverse
-from rest_framework.decorators import action, permission_classes
 import jwt
 from django.conf import settings
 from drf_yasg.utils import swagger_auto_schema
@@ -28,7 +25,7 @@ from django.template.loader import render_to_string
 # import base64
 
 
-class AccountViewSet(DestroyModelMixin, viewsets.GenericViewSet):
+class AccountViewSet(DestroyModelMixin, GenericViewSet):
     serializer_class = AccountSerializer
     queryset = Account.objects.all()
 
@@ -46,14 +43,6 @@ class AccountViewSet(DestroyModelMixin, viewsets.GenericViewSet):
             permission_classes = [AllowAny]
         return [permission() for permission in permission_classes]
 
-    
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        instance.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    # def perform_destroy(self, instance):
-    #     instance.delete()
 
     # Not a list, instead just returns one user from JWT
     def list(self, request):
@@ -252,7 +241,7 @@ class AccountViewSet(DestroyModelMixin, viewsets.GenericViewSet):
                 }, status=status.HTTP_404_NOT_FOUND)
 
 
-class EmailVerification(viewsets.GenericViewSet):
+class EmailVerification(GenericViewSet):
 
     serializer_class = EmailVerifSerializer
 
@@ -296,7 +285,7 @@ class EmailVerification(viewsets.GenericViewSet):
             }, status=status.HTTP_401_UNAUTHORIZED)
 
 
-class VerifyOrganization(viewsets.GenericViewSet):
+class VerifyOrganization(GenericViewSet):
 
     serializer_class = OrganizationVerifSerializer
 
@@ -339,7 +328,7 @@ class VerifyOrganization(viewsets.GenericViewSet):
             })
 
 
-class VerifyEmailBackDoor(viewsets.GenericViewSet):
+class VerifyEmailBackDoor(GenericViewSet):
     serializer_class = OrganizationVerifSerializer
 
 
