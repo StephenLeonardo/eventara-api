@@ -5,7 +5,8 @@ from .serializers import (RegisterSerializer, AccountSerializer,
                             LoginSerializer, RequestVerifSerializer,
                             LoginReturnSerializer, EmailVerifSerializer,
                             OrganizationVerifSerializer)
-from rest_framework import serializers, viewsets, mixins, status
+from rest_framework import serializers, viewsets, status
+from rest_framework.mixins import (DestroyModelMixin)
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 # import json
@@ -27,9 +28,9 @@ from django.template.loader import render_to_string
 # import base64
 
 
-class AccountViewSet(viewsets.GenericViewSet):
-    serializer_class = RegisterSerializer
-
+class AccountViewSet(DestroyModelMixin, viewsets.GenericViewSet):
+    serializer_class = AccountSerializer
+    queryset = Account.objects.all()
 
 
     def get_serializer_class(self):
@@ -45,8 +46,14 @@ class AccountViewSet(viewsets.GenericViewSet):
             permission_classes = [AllowAny]
         return [permission() for permission in permission_classes]
 
-    def get_queryset(self):
-        queryset = Account.objects.all()
+    
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # def perform_destroy(self, instance):
+    #     instance.delete()
 
     # Not a list, instead just returns one user from JWT
     def list(self, request):
@@ -273,20 +280,20 @@ class EmailVerification(viewsets.GenericViewSet):
         except jwt.ExpiredSignatureError as ex:
             return Response({
                 'Status': False,
-                'Message': 'Activation Expired'
-            })
+                'Message': 'Activation Expired.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
         except jwt.exceptions.DecodeError as ex:
             return Response({
                 'Status': False,
                 'Message': 'Invalid Token!'
-            })
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
         except Account.DoesNotExist:
             return Response({
                 'Status': False,
-                'Message': 'Email or Password is incorrect'
-            })
+                'Message': 'Account with this email does not exist.'
+            }, status=status.HTTP_401_UNAUTHORIZED)
 
 
 class VerifyOrganization(viewsets.GenericViewSet):
