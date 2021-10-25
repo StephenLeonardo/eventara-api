@@ -1,4 +1,5 @@
 from datetime import timedelta
+from os import stat
 from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
 from rest_framework.decorators import action, authentication_classes, permission_classes
@@ -239,7 +240,6 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
         try:
 
             account = request.user
-            print(account)
 
             if not account.is_verified:
                 account.is_verified = True
@@ -259,7 +259,7 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
             return Response({
                 'Status': False,
                 'Message': str(e)
-            })
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
     
 
