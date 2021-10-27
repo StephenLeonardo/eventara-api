@@ -146,18 +146,15 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
             instance = self.get_object()            
             
             instance.categories.set(category_list)
-            # instance.save()
+            instance.save()
 
             result_serializer = EventSerializer(instance=instance)
 
-            if result_serializer.is_valid():
-                result_serializer.save()
-
-                return Response({
-                    'Status': True,
-                    'Message': 'Wow it worked!',
-                    'Data': result_serializer.data,
-                }, status=status.HTTP_201_CREATED)
+            return Response({
+                'Status': True,
+                'Message': 'Wow it worked!',
+                'Data': result_serializer.data,
+            }, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
