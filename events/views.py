@@ -109,8 +109,9 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
             category_list = serialized_data.pop('categories', [])
 
             event = Event.objects.create(**serialized_data, organizer=request.user)
-            if not category_list:
-                event.categories.set(category_list)
+
+
+            event.categories.set(category_list)
             event.save()
 
             result_serializer = EventSerializer(instance=event)
