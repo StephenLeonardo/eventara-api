@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework import serializers, status
 from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+
+import categories
 from .models import Event
 from .serializers import (EventSerializer, EventPostSerializer,
                             EventByCategorySerializer, EventListSerializer, EventPostUrlSerializer)
@@ -16,6 +18,7 @@ storage = GoogleCloudStorage()
 
 
 class EventGenericViewSet(mixins.DestroyModelMixin,
+                        mixins.UpdateModelMixin,
                         viewsets.GenericViewSet):
 
     permission_classes = [IsAuthenticatedOrReadOnly, AllowAny] # For development purposes
@@ -74,28 +77,8 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
     def create(self, request):
         serializer = EventPostSerializer(data=request.data)
 
-        
-        # auth_header = request.headers.get('Authorization')
-        # jwt_token = auth_header.split(' ')[1]
-        # 
-        # user_id = TokenBackend(algorithm='HS256').decode(jwt_token,verify=False)
-        # # user_id = jwt.decode(jwt_token,algorithms=['HS512'])
-        # 
-        # 
-
-        #
-        # category_list = serializer.data.pop('categories', [])
-        # print('ahahahhaha' + str(category_list))
-
-
         if serializer.is_valid():
             serialized_data = serializer.data
-            # serialized_data['organizer'] = Account.objects.get(
-            #                         username=serialized_data.pop('organizer_username', None)
-            #                         )
-
-            
-
 
             if'image' in request.FILES:
                 image = request.FILES['image']
@@ -109,8 +92,9 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
             category_list = serialized_data.pop('categories', [])
 
             event = Event.objects.create(**serialized_data, organizer=request.user)
-            if not category_list:
-                event.categories.set(category_list)
+
+
+            event.categories.set(category_list)
             event.save()
 
             result_serializer = EventSerializer(instance=event)
@@ -125,38 +109,70 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
 
 
     def update(self, request, pk=None):
+
         serializer = EventPostSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer_data = serializer.data
+
+        if 'image' in request.FILES:
+            image = request.FILES['image']
+
+            if image:
+                month_year = time.strftime("%m-%Y")
+                path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+                full_path = '{}{}'.format(settings.MEDIA_URL, path)
+                serializer_data['image'] = full_path
+
+
+        category_list = serializer_data.pop('categories', [])
+        event = Event.objects.create(**serializer_data, organizer=request.user)
+        event.categories.set(category_list)
+        event.save()
+
+        result_serializer = EventSerializer(instance=event)
+        return Response({
+            'Status': True,
+            'Message': 'Wow it worked!',
+            'Data': result_serializer.data,
+        }, status=status.HTTP_202_ACCEPTED)
         
-        if serializer.is_valid():
-            serialized_data = serializer.data
-            instance = self.get_object()
 
-            if'image' in request.FILES:
-                image = request.FILES['image']
-
-                if image:
-                    month_year = time.strftime("%m-%Y")
-                    path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-                    full_path = '{}{}'.format(settings.MEDIA_URL, path)
-                    serialized_data['image'] = full_path
-
-            category_list = serialized_data.pop('categories', [])
+        
+        
 
 
-            instance = self.get_object()            
+        # serializer = EventPostSerializer(data=request.data)
+        
+        # if serializer.is_valid():
+        #     serialized_data = serializer.data
+        #     instance = self.get_object()
+
+        #     if 'image' in request.FILES:
+        #         image = request.FILES['image']
+
+        #         if image:
+        #             month_year = time.strftime("%m-%Y")
+        #             path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+        #             full_path = '{}{}'.format(settings.MEDIA_URL, path)
+        #             serialized_data['image'] = full_path
+
+        #     category_list = serialized_data.pop('categories', [])
+
+
+        #     instance = self.get_object()            
             
-            instance.categories.set(category_list)
-            instance.save()
+        #     instance.categories.set(category_list)
+        #     instance.save()
 
-            result_serializer = EventSerializer(instance=instance)
+        #     result_serializer = EventSerializer(instance=instance)
 
-            return Response({
-                'Status': True,
-                'Message': 'Wow it worked!',
-                'Data': result_serializer.data,
-            }, status=status.HTTP_200_OK)
+        #     return Response({
+        #         'Status': True,
+        #         'Message': 'Wow it worked!',
+        #         'Data': result_serializer.data,
+        #     }, status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         
                 

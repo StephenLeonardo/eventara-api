@@ -41,14 +41,12 @@ class EventPostSerializer(serializers.ModelSerializer):
     # organizer_username = serializers.CharField()
 
     def to_internal_value(self, data):
-    #    if 'categories' not in data:
-    #         data['categories'] = []
-       if 'categories' in data and data['categories'] == '':
+        if 'categories' in data and data['categories'] == '':
             _mutable = data._mutable
             data._mutable = True
             data.pop('categories')
             data._mutable = _mutable
-       return super(EventPostSerializer,self).to_internal_value(data)
+        return super(EventPostSerializer,self).to_internal_value(data)
     class Meta:
         model = Event
         fields = ['name',
