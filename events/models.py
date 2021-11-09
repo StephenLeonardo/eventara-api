@@ -51,7 +51,7 @@ class Event(models.Model):
 
 
 class EventImage(models.Model):
-    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4())
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4)
     image_url = models.CharField(max_length=255)
     image_width = models.IntegerField(null=True, blank=True)
     image_height = models.IntegerField(null=True, blank=True)
