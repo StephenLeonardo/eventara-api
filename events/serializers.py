@@ -1,14 +1,24 @@
+from django.db.models import fields
 from rest_framework import serializers
-from .models import Event
+from .models import Event, EventImage
 
 from categories.serializers import CategorySerializer
 from organizers.serializers import OrganizerSerializer
 from accounts.serializers import AccountSerializer
 
 
+class EventImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventImage
+        exclude = ['event']
+
+
+
 class EventSerializer(serializers.ModelSerializer):
-    organizer = AccountSerializer()
-    categories = CategorySerializer(many=True)
+    organizer = AccountSerializer(read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
+    event_images = EventImageSerializer(many=True, read_only=True)
+    thumbnail = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -23,10 +33,19 @@ class EventSerializer(serializers.ModelSerializer):
                     'event_end_time',
                     'categories',
                     'is_online',
-                    'registration_link']
+                    'registration_link',
+                    'event_images',
+                    'thumbnail']
+
+    
+    def get_thumbnail(self, instance):
+        thumbnail = instance.event_images.all()
+        return EventImageSerializer(thumbnail[0]).data
 
 class EventListSerializer(serializers.ModelSerializer):
     organizer = AccountSerializer()
+    # thumbnail = EventImageSerializer(read_only=True)
+    thumbnail = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -34,7 +53,15 @@ class EventListSerializer(serializers.ModelSerializer):
                     'name',
                     'image',
                     'organizer',
-                    'event_date']
+                    'event_date',
+                    'thumbnail']
+
+
+    def get_thumbnail(self, instance):
+        thumbnail = instance.event_images.all().order_by('image_order')
+        if thumbnail:
+            return EventImageSerializer(thumbnail[0]).data
+        return None
 
 
 class EventPostSerializer(serializers.ModelSerializer):
