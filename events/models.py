@@ -36,8 +36,31 @@ class Event(models.Model):
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
 
+
+
+    @property
+    def thumbnail(self):
+        return self.event_images.first()
+
+
     def __str__(self):
         return self.name
 
     class Meta:
         db_table = "Events"
+
+
+class EventImage(models.Model):
+    id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4())
+    image_url = models.CharField(max_length=255)
+    image_width = models.IntegerField(null=True, blank=True)
+    image_height = models.IntegerField(null=True, blank=True)
+    image_dominant_color = models.CharField(max_length=50, null=True, blank=True)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_images')
+    image_order = models.IntegerField()
+
+    def __str__(self):
+        return self.image_url
+
+    class Meta:
+        db_table = "EventImages"
