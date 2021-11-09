@@ -40,7 +40,9 @@ class EventSerializer(serializers.ModelSerializer):
     
     def get_thumbnail(self, instance):
         thumbnail = instance.event_images.all()
-        return EventImageSerializer(thumbnail[0]).data
+        if thumbnail:
+            return EventImageSerializer(thumbnail[0]).data
+        return None
 
 class EventListSerializer(serializers.ModelSerializer):
     organizer = AccountSerializer()
