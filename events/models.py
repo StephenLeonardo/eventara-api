@@ -22,12 +22,23 @@ def get_current_month_year():
     return '{}-{}'.format(datetime.datetime.now().month, datetime.datetime.now().year)
 
 
+def path_and_rename(instance, filename):
+    upload_to = 'events/{}/'.format(get_current_month_year())
+    ext = filename.split('.')[-1]
+    now = datetime.datetime.now()
+    if instance.pk:
+        filename = '{}_{}.{}'.format(now.strftime('%d%H%M%S'), instance.pk[:5], ext)
+    else:
+        filename = '{}_{}.{}'.format(now.strftime('%d%H%M%S'), uuid.uuid4().hex[:5], ext)
+    # return the whole path to the file
+    return '{}{}'.format(upload_to, filename)
+
 # Create your models here.
 class Event(models.Model):
     event_id = models.CharField(max_length=6, primary_key=True, default=id_gen, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField(max_length=None, null=True, blank=True)
-    image = models.ImageField(upload_to='events/{}/'.format(get_current_month_year()), null=True, blank=True, max_length=255)
+    image = models.ImageField(upload_to=path_and_rename, null=True, blank=True, max_length=255)
     organizer = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True)
     location = models.CharField(max_length=255)
     event_date = models.DateField(blank=True, null=True)
@@ -56,7 +67,7 @@ class Event(models.Model):
 
 class EventImage(models.Model):
     id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4)
-    image = models.ImageField(upload_to='events/{}/'.format(get_current_month_year()), null=True, blank=True, max_length=255)
+    image = models.ImageField(upload_to=path_and_rename, null=True, blank=True, max_length=255)
     image_width = models.IntegerField(null=True, blank=True)
     image_height = models.IntegerField(null=True, blank=True)
     image_dominant_color = models.CharField(max_length=50, null=True, blank=True)
