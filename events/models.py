@@ -1,6 +1,7 @@
 from django.db import models
 import uuid
 from django.utils.http import int_to_base36
+from django.utils.crypto import get_random_string
 
 from categories.models import Category
 from organizers.models import Organizer
@@ -27,10 +28,10 @@ def path_and_rename(instance, filename):
     ext = filename.split('.')[-1]
     now = datetime.datetime.now()
     if instance.pk:
-        filename = '{}_{}.{}'.format(now.strftime('%d%H%M%S'), instance.pk[:5], ext)
+        filename = '{}_{}.{}'.format(now.strftime('%d%H%M%S'), str(instance.pk)[:5], ext)
     else:
-        filename = '{}_{}.{}'.format(now.strftime('%d%H%M%S'), uuid.uuid4().hex[:5], ext)
-    # return the whole path to the file
+        allowed_chars=u'abcdefghijklmnopqrstuvwxyz0123456789'
+        filename = '{}_{}.{}'.format(now.strftime('%d%H%M%S'), get_random_string(length=5, allowed_chars=allowed_chars), ext)
     return '{}{}'.format(upload_to, filename)
 
 # Create your models here.

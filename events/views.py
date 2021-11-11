@@ -99,14 +99,14 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
             if 'images' in request.FILES:
                 images = request.FILES.getlist('images')
                 for index, image in enumerate(images):
-                    month_year = time.strftime("%m-%Y")
-                    path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-                    full_path = '{}{}'.format(settings.MEDIA_URL, path)
+                    # month_year = time.strftime("%m-%Y")
+                    # path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+                    # full_path = '{}{}'.format(settings.MEDIA_URL, path)
 
                     # if index == 0:
                     #     event.update(image=full_path)
 
-                    event_image = EventImage.objects.create(image=full_path, event=event, image_order=index+1)
+                    event_image = EventImage.objects.create(image=image, event=event, image_order=index+1)
                     event_image.save()
 
 
