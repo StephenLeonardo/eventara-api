@@ -84,10 +84,10 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
                 image = request.FILES['image']
 
                 if image:
-                    month_year = time.strftime("%m-%Y")
-                    path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-                    full_path = '{}{}'.format(settings.MEDIA_URL, path)
-                    serialized_data['image'] = full_path
+                    # month_year = time.strftime("%m-%Y")
+                    # path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+                    # full_path = '{}{}'.format(settings.MEDIA_URL, path)
+                    serialized_data['image'] = image
                                     
             category_list = serialized_data.pop('categories', [])
 
@@ -106,7 +106,7 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
                     # if index == 0:
                     #     event.update(image=full_path)
 
-                    event_image = EventImage.objects.create(image_url=full_path, event=event, image_order=index+1)
+                    event_image = EventImage.objects.create(image=full_path, event=event, image_order=index+1)
                     event_image.save()
 
 
@@ -123,83 +123,103 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
 
     def update(self, request, pk=None):
 
+        # serializer = EventPostSerializer(data=request.data)
+        # serializer.is_valid(raise_exception=True)
+        # serializer_data = serializer.data
+
+        # event = self.get_object()
+
+        # if 'image' in request.FILES:
+        #     image = request.FILES['image']
+
+        #     if image:
+        #         month_year = time.strftime("%m-%Y")
+        #         path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+        #         full_path = '{}{}'.format(settings.MEDIA_URL, path)
+        #         serializer_data['image'] = full_path
+
+
+        # category_list = serializer_data.pop('categories', [])
+        # # event = Event.objects.create(**serializer_data, organizer=request.user)
+        # event.categories.set(category_list)
+        # event.save()
+
+
+        # if 'images' in request.FILES:
+        #     images = request.FILES.getlist('images')
+        #     for index, image in enumerate(images):
+        #         month_year = time.strftime("%m-%Y")
+        #         path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+        #         full_path = '{}{}'.format(settings.MEDIA_URL, path)
+
+        #         # if index == 0:
+        #         #     event.update(image=full_path)
+
+        #         event_image = EventImage.objects.create(image=full_path, event=event, image_order=index+1)
+        #         event_image.save()
+
+        # result_serializer = EventSerializer(instance=event)
+        # return Response({
+        #     'Status': True,
+        #     'Message': 'Wow it worked!',
+        #     'Data': result_serializer.data,
+        # }, status=status.HTTP_202_ACCEPTED)
+        
+
+        
+        
+
+
         serializer = EventPostSerializer(data=request.data)
+        
         serializer.is_valid(raise_exception=True)
-        serializer_data = serializer.data
+        serialized_data = serializer.data
+        instance = self.get_object()
 
         if 'image' in request.FILES:
             image = request.FILES['image']
 
             if image:
-                month_year = time.strftime("%m-%Y")
-                path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-                full_path = '{}{}'.format(settings.MEDIA_URL, path)
-                serializer_data['image'] = full_path
+                # month_year = time.strftime("%m-%Y")
+                # path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+                # full_path = '{}{}'.format(settings.MEDIA_URL, path)
+                # serialized_data['image'] = full_path
+                serialized_data['image'] = image
+
+        category_list = serialized_data.pop('categories', [])  
+        
+        instance.categories.set(category_list)
 
 
-        category_list = serializer_data.pop('categories', [])
-        event = Event.objects.create(**serializer_data, organizer=request.user)
-        event.categories.set(category_list)
-        event.save()
+        update_serializer = EventPostSerializer(instance, data=serialized_data, partial=False)
+        update_serializer.is_valid(raise_exception=True)
+        update_serializer.save()
 
-
+        # Delete all event images and add them again
+        EventImage.objects.filter(event=instance).delete()
         if 'images' in request.FILES:
             images = request.FILES.getlist('images')
             for index, image in enumerate(images):
-                month_year = time.strftime("%m-%Y")
-                path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-                full_path = '{}{}'.format(settings.MEDIA_URL, path)
+                # month_year = time.strftime("%m-%Y")
+                # path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+                # full_path = '{}{}'.format(settings.MEDIA_URL, path)
 
                 # if index == 0:
                 #     event.update(image=full_path)
 
-                event_image = EventImage.objects.create(image_url=full_path, event=event, image_order=index+1)
+                event_image = EventImage.objects.create(image=image, event=instance, image_order=index+1)
                 event_image.save()
 
-        result_serializer = EventSerializer(instance=event)
+        # instance.save()
+
+        result_serializer = EventSerializer(instance=instance)
+
         return Response({
             'Status': True,
             'Message': 'Wow it worked!',
             'Data': result_serializer.data,
-        }, status=status.HTTP_202_ACCEPTED)
-        
+        }, status=status.HTTP_200_OK)
 
-        
-        
-
-
-        # serializer = EventPostSerializer(data=request.data)
-        
-        # if serializer.is_valid():
-        #     serialized_data = serializer.data
-        #     instance = self.get_object()
-
-        #     if 'image' in request.FILES:
-        #         image = request.FILES['image']
-
-        #         if image:
-        #             month_year = time.strftime("%m-%Y")
-        #             path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-        #             full_path = '{}{}'.format(settings.MEDIA_URL, path)
-        #             serialized_data['image'] = full_path
-
-        #     category_list = serialized_data.pop('categories', [])
-
-
-        #     instance = self.get_object()            
-            
-        #     instance.categories.set(category_list)
-        #     instance.save()
-
-        #     result_serializer = EventSerializer(instance=instance)
-
-        #     return Response({
-        #         'Status': True,
-        #         'Message': 'Wow it worked!',
-        #         'Data': result_serializer.data,
-        #     }, status=status.HTTP_200_OK)
-
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
         
                 

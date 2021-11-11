@@ -87,7 +87,8 @@ class EventPostSerializer(serializers.ModelSerializer):
                     'event_end_time',
                     'categories',
                     'is_online',
-                    'registration_link']
+                    'registration_link',
+                    'image']
 
 
 class EventPostUrlSerializer(serializers.ModelSerializer):

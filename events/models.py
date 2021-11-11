@@ -5,6 +5,7 @@ from django.utils.http import int_to_base36
 from categories.models import Category
 from organizers.models import Organizer
 from accounts.models import Account
+import datetime
 
 def id_gen():
     """Generates random string whose length is `ID_LENGTH`"""
@@ -17,13 +18,16 @@ def id_gen():
 #     class Meta:
 #         db_table = "EventImages"
 
+def get_current_month_year():
+    return '{}-{}'.format(datetime.datetime.now().month, datetime.datetime.now().year)
+
 
 # Create your models here.
 class Event(models.Model):
     event_id = models.CharField(max_length=6, primary_key=True, default=id_gen, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField(max_length=None, null=True, blank=True)
-    image = models.CharField(max_length=255, null=True, blank=True)
+    image = models.ImageField(upload_to='events/{}/'.format(get_current_month_year()), null=True, blank=True)
     organizer = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True)
     location = models.CharField(max_length=255)
     event_date = models.DateField(blank=True, null=True)
@@ -52,7 +56,7 @@ class Event(models.Model):
 
 class EventImage(models.Model):
     id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4)
-    image_url = models.CharField(max_length=255)
+    image = models.ImageField(upload_to='events/{}/'.format(get_current_month_year()), null=True, blank=True)
     image_width = models.IntegerField(null=True, blank=True)
     image_height = models.IntegerField(null=True, blank=True)
     image_dominant_color = models.CharField(max_length=50, null=True, blank=True)
