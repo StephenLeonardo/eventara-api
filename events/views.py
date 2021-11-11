@@ -80,14 +80,14 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
         if serializer.is_valid():
             serialized_data = serializer.data
 
-            # if 'image' in request.FILES:
-            #     image = request.FILES['image']
+            if 'image' in request.FILES:
+                image = request.FILES['image']
 
-            #     if image:
-            #         month_year = time.strftime("%m-%Y")
-            #         path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-            #         full_path = '{}{}'.format(settings.MEDIA_URL, path)
-            #         serialized_data['image'] = full_path
+                if image:
+                    month_year = time.strftime("%m-%Y")
+                    path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+                    full_path = '{}{}'.format(settings.MEDIA_URL, path)
+                    serialized_data['image'] = full_path
                                     
             category_list = serialized_data.pop('categories', [])
 
