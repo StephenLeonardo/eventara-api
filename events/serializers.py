@@ -1,9 +1,7 @@
-from django.db.models import fields
 from rest_framework import serializers
 from .models import Event, EventImage
 
 from categories.serializers import CategorySerializer
-from organizers.serializers import OrganizerSerializer
 from accounts.serializers import AccountSerializer
 
 
@@ -17,7 +15,7 @@ class EventImageSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     organizer = AccountSerializer(read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
-    event_images = EventImageSerializer(many=True, read_only=True)
+    images = EventImageSerializer(many=True, read_only=True)
     thumbnail = serializers.SerializerMethodField()
 
     class Meta:
@@ -34,7 +32,7 @@ class EventSerializer(serializers.ModelSerializer):
                     'categories',
                     'is_online',
                     'registration_link',
-                    'event_images',
+                    'images',
                     'thumbnail']
 
     
