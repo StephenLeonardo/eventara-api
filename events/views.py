@@ -1,10 +1,13 @@
 import time
+import json
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from rest_framework.decorators import action
+
+from categories import serializers
 from .utils import path_and_rename
 from .models import Event, EventImage
 from .serializers import (EventSerializer, EventPostSerializer,
@@ -79,25 +82,37 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
 
         if serializer.is_valid():
             serialized_data = serializer.data
-
-            if 'image' in request.FILES:
-                image = request.FILES['image']
-
-                if image:
-                    serialized_data['image'] = image
-                                    
+            print(serialized_data)
+            images = serialized_data.pop('images', [])
             category_list = serialized_data.pop('categories', [])
 
             event = Event.objects.create(**serialized_data, organizer=request.user)
             event.categories.set(category_list)
-
+            # event.images.set(images)
             event.save()
 
-            if 'images' in request.FILES:
-                images = request.FILES.getlist('images')
-                for index, image in enumerate(images):
-                    event_image = EventImage.objects.create(image=image, event=event, image_order=index+1)
-                    event_image.save()
+            for index, item in enumerate(images):
+                y = json.loads(item)
+                EventImage.objects.create(**y, event=event, image_order=index+1).save()
+
+            # if 'image' in request.FILES:
+            #     image = request.FILES['image']
+
+            #     if image:
+            #         serialized_data['image'] = image
+                                    
+            # category_list = serialized_data.pop('categories', [])
+
+            # event = Event.objects.create(**serialized_data, organizer=request.user)
+            # event.categories.set(category_list)
+
+            # event.save()
+
+            # if 'images' in request.FILES:
+            #     images = request.FILES.getlist('images')
+            #     for index, image in enumerate(images):
+            #         event_image = EventImage.objects.create(image=image, event=event, image_order=index+1)
+            #         event_image.save()
 
 
             result_serializer = EventSerializer(instance=event)
@@ -107,7 +122,6 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
                 'Message': 'Wow it worked!',
                 'Data': result_serializer.data,
             }, status=status.HTTP_201_CREATED)
-
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -118,15 +132,15 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
         serialized_data = serializer.data
         instance = self.get_object()
 
-        if 'image' in request.FILES:
-            image = request.FILES['image']
+        # if 'image' in request.FILES:
+        #     image = request.FILES['image']
 
-            if image:
-                # month_year = time.strftime("%m-%Y")
-                # path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-                # full_path = '{}{}'.format(settings.MEDIA_URL, path)
-                # serialized_data['image'] = full_path
-                serialized_data['image'] = image
+        #     if image:
+        #         # month_year = time.strftime("%m-%Y")
+        #         # path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+        #         # full_path = '{}{}'.format(settings.MEDIA_URL, path)
+        #         # serialized_data['image'] = full_path
+        #         serialized_data['image'] = image
 
         category_list = serialized_data.pop('categories', [])  
         
@@ -139,18 +153,18 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
 
         # Delete all event images and add them again
         EventImage.objects.filter(event=instance).delete()
-        if 'images' in request.FILES:
-            images = request.FILES.getlist('images')
-            for index, image in enumerate(images):
-                # month_year = time.strftime("%m-%Y")
-                # path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-                # full_path = '{}{}'.format(settings.MEDIA_URL, path)
+        # if 'images' in request.FILES:
+        #     images = request.FILES.getlist('images')
+        #     for index, image in enumerate(images):
+        #         # month_year = time.strftime("%m-%Y")
+        #         # path = storage.save('events/{}/{}'.format(month_year, image.name), image)
+        #         # full_path = '{}{}'.format(settings.MEDIA_URL, path)
 
-                # if index == 0:
-                #     event.update(image=full_path)
+        #         # if index == 0:
+        #         #     event.update(image=full_path)
 
-                event_image = EventImage.objects.create(image=image, event=instance, image_order=index+1)
-                event_image.save()
+        #         event_image = EventImage.objects.create(image=image, event=instance, image_order=index+1)
+        #         event_image.save()
 
         # instance.save()
 
