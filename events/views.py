@@ -4,10 +4,9 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import mixins
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.decorators import action
 
-from categories import serializers
 from .utils import path_and_rename
 from .models import Event, EventImage
 from .serializers import (EventSerializer, EventPostSerializer,
@@ -24,7 +23,7 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
                         mixins.UpdateModelMixin,
                         viewsets.GenericViewSet):
 
-    permission_classes = [IsAuthenticatedOrReadOnly, AllowAny] # For development purposes
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = EventSerializer
     queryset = Event.objects.all()
 
@@ -88,32 +87,11 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
 
             event = Event.objects.create(**serialized_data, organizer=request.user)
             event.categories.set(category_list)
-            # event.images.set(images)
             event.save()
 
             for index, item in enumerate(images):
                 y = json.loads(item)
                 EventImage.objects.create(**y, event=event, image_order=index+1).save()
-
-            # if 'image' in request.FILES:
-            #     image = request.FILES['image']
-
-            #     if image:
-            #         serialized_data['image'] = image
-                                    
-            # category_list = serialized_data.pop('categories', [])
-
-            # event = Event.objects.create(**serialized_data, organizer=request.user)
-            # event.categories.set(category_list)
-
-            # event.save()
-
-            # if 'images' in request.FILES:
-            #     images = request.FILES.getlist('images')
-            #     for index, image in enumerate(images):
-            #         event_image = EventImage.objects.create(image=image, event=event, image_order=index+1)
-            #         event_image.save()
-
 
             result_serializer = EventSerializer(instance=event)
 
@@ -132,17 +110,10 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
         serialized_data = serializer.data
         instance = self.get_object()
 
-        # if 'image' in request.FILES:
-        #     image = request.FILES['image']
-
-        #     if image:
-        #         # month_year = time.strftime("%m-%Y")
-        #         # path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-        #         # full_path = '{}{}'.format(settings.MEDIA_URL, path)
-        #         # serialized_data['image'] = full_path
-        #         serialized_data['image'] = image
-
         category_list = serialized_data.pop('categories', [])  
+        
+        images = serialized_data.pop('images', [])
+        serialized_data['images'] = []
         
         instance.categories.set(category_list)
 
@@ -153,20 +124,11 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
 
         # Delete all event images and add them again
         EventImage.objects.filter(event=instance).delete()
-        # if 'images' in request.FILES:
-        #     images = request.FILES.getlist('images')
-        #     for index, image in enumerate(images):
-        #         # month_year = time.strftime("%m-%Y")
-        #         # path = storage.save('events/{}/{}'.format(month_year, image.name), image)
-        #         # full_path = '{}{}'.format(settings.MEDIA_URL, path)
 
-        #         # if index == 0:
-        #         #     event.update(image=full_path)
+        for index, item in enumerate(images):
+            y = json.loads(item)
+            EventImage.objects.create(**y, event=instance, image_order=index+1).save()
 
-        #         event_image = EventImage.objects.create(image=image, event=instance, image_order=index+1)
-        #         event_image.save()
-
-        # instance.save()
 
         result_serializer = EventSerializer(instance=instance)
 
@@ -180,7 +142,7 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
     
     @action(methods=['post'], permission_classes=[IsAuthenticated], detail=False)
     def image(self, request):
-        print(request.user.id)
+
         if 'image' in request.FILES:
             image = request.FILES['image']
             if image:
