@@ -39,7 +39,7 @@ class Event(models.Model):
     event_id = models.CharField(max_length=6, primary_key=True, default=id_gen, editable=False)
     name = models.CharField(max_length=255)
     description = models.TextField(max_length=None, null=True, blank=True)
-    image = models.ImageField(upload_to=path_and_rename, null=True, blank=True, max_length=255)
+    image = models.URLField(null=True, blank=True, max_length=255)
     organizer = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True)
     location = models.CharField(max_length=255)
     event_date = models.DateField(blank=True, null=True)
@@ -68,11 +68,11 @@ class Event(models.Model):
 
 class EventImage(models.Model):
     id = models.CharField(max_length=36, primary_key=True, default=uuid.uuid4)
-    image = models.ImageField(upload_to=path_and_rename, null=True, blank=True, max_length=255)
-    image_width = models.IntegerField(null=True, blank=True)
-    image_height = models.IntegerField(null=True, blank=True)
-    image_dominant_color = models.CharField(max_length=50, null=True, blank=True)
-    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='event_images')
+    image = models.URLField(null=True, blank=True, max_length=255)
+    width = models.IntegerField(null=True, blank=True)
+    height = models.IntegerField(null=True, blank=True)
+    dominant_color = models.CharField(max_length=50, null=True, blank=True)
+    event = models.ForeignKey(Event, on_delete=models.CASCADE, related_name='images')
     image_order = models.IntegerField()
 
     def __str__(self):
