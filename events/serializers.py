@@ -1,14 +1,28 @@
 from rest_framework import serializers
-from .models import Event
+from rest_framework.fields import ListField
+from .models import Event, EventImage
 
 from categories.serializers import CategorySerializer
-from organizers.serializers import OrganizerSerializer
 from accounts.serializers import AccountSerializer
 
 
+class EventImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventImage
+        exclude = ['event']
+
+class EventImagePostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EventImage
+        exclude = ['event', 'id']
+
+
 class EventSerializer(serializers.ModelSerializer):
-    organizer = AccountSerializer()
-    categories = CategorySerializer(many=True)
+    organizer = AccountSerializer(read_only=True)
+    categories = CategorySerializer(many=True, read_only=True)
+    # images = EventImageSerializer(many=True, read_only=True)
+    images = serializers.SerializerMethodField()
+    thumbnail = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -23,10 +37,24 @@ class EventSerializer(serializers.ModelSerializer):
                     'event_end_time',
                     'categories',
                     'is_online',
-                    'registration_link']
+                    'registration_link',
+                    'images',
+                    'thumbnail']
+
+    def get_images(self, instance):
+        images = instance.images.all().order_by('image_order')
+        return EventImageSerializer(images, many=True).data
+    
+    def get_thumbnail(self, instance):
+        thumbnail = instance.images.all().order_by('image_order')
+        if thumbnail:
+            return EventImageSerializer(thumbnail[0]).data
+        return None
 
 class EventListSerializer(serializers.ModelSerializer):
     organizer = AccountSerializer()
+    # thumbnail = EventImageSerializer(read_only=True)
+    thumbnail = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
@@ -34,11 +62,31 @@ class EventListSerializer(serializers.ModelSerializer):
                     'name',
                     'image',
                     'organizer',
-                    'event_date']
+                    'event_date',
+                    'thumbnail']
+
+
+    def get_thumbnail(self, instance):
+        thumbnail = instance.images.all().order_by('image_order')
+        if thumbnail:
+            return EventImageSerializer(thumbnail[0]).data
+        return None
+
 
 
 class EventPostSerializer(serializers.ModelSerializer):
     # organizer_username = serializers.CharField()
+
+    def to_internal_value(self, data):
+        if 'categories' in data and data['categories'] == '':
+            _mutable = data._mutable
+            data._mutable = True
+            data.pop('categories')
+            data._mutable = _mutable
+        return super(EventPostSerializer,self).to_internal_value(data)
+
+    # images = EventImagePostSerializer(many=True)
+    images = ListField(child=serializers.CharField())
     class Meta:
         model = Event
         fields = ['name',
@@ -50,7 +98,9 @@ class EventPostSerializer(serializers.ModelSerializer):
                     'event_end_time',
                     'categories',
                     'is_online',
-                    'registration_link']
+                    'registration_link',
+                    'image',
+                    'images']
 
 
 class EventPostUrlSerializer(serializers.ModelSerializer):

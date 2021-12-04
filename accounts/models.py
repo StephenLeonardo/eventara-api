@@ -111,6 +111,15 @@ class UsernameOrEmailBackend(object):
             return MyUser.objects.get(pk=id)
         except MyUser.DoesNotExist:
             return None
+
+
+class OrganizationRequest(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, related_name='organization_request')
+    verified_by = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, related_name='organization_verified_by')
+    verified_date = models.DateTimeField(null=True, blank=True)
+    
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
     
     
     
