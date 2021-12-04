@@ -11,20 +11,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='eventimage',
-            name='image_url',
-        ),
-        migrations.AddField(
-            model_name='eventimage',
-            name='image',
-            field=models.ImageField(blank=True, null=True, upload_to='events/11-2021/'),
-        ),
-        migrations.AlterField(
-            model_name='event',
-            name='image',
-            field=models.ImageField(blank=True, null=True, upload_to='events/11-2021/'),
-        ),
         migrations.AlterField(
             model_name='eventimage',
             name='id',
