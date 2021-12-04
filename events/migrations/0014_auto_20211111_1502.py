@@ -10,15 +10,15 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterField(
-            model_name='event',
+        migrations.AddField(
+            model_name='eventimage',
             name='image',
             field=models.ImageField(blank=True, null=True, upload_to='events/11-2021/'),
         ),
         migrations.AlterField(
-            model_name='eventimage',
+            model_name='event',
             name='image',
-            field=models.ImageField(blank=True, null=True, upload_to='events/11-2021/'),
+            field=models.ImageField(blank=True, null=True, max_length=255, upload_to='events/11-2021/'),
         ),
         migrations.AlterField(
             model_name='eventimage',
