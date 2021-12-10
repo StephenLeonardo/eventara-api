@@ -55,6 +55,7 @@ class Account(AbstractBaseUser, PermissionsMixin):
     password = models.CharField(max_length=255)
     description = models.TextField(max_length=None, blank=True, null=True)
     profile_picture = models.CharField(max_length=255, blank=True, null=True)
+    location = models.CharField(max_length=255, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

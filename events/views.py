@@ -84,7 +84,6 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
 
         if serializer.is_valid():
             serialized_data = serializer.data
-            print(serialized_data)
             images = serialized_data.pop('images', [])
             category_list = serialized_data.pop('categories', [])
 
