@@ -8,8 +8,8 @@ class TestSetUp(APITestCase):
 
     def setUp(self):
         self.register_url = reverse('account-list')
-        self.login_url = reverse('account-log-in')
-        self.verify_email_url = reverse('verify-email-verify')
+        self.login_url = reverse('account-login')
+        self.verify_email_url = reverse('account-email-verification')
 
         self.user_register_data = {
             'username': 'Test Account 123',

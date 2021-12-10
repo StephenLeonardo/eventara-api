@@ -37,6 +37,7 @@ class AccountSerializer(serializers.ModelSerializer):
                 'username',
                 'profile_picture',
                 'description',
+                'location',
                 'is_verified',
                 'is_organizer',
                 'is_staff']
@@ -58,13 +59,11 @@ class LoginTokenSerializer(serializers.ModelSerializer):
 class AccountPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        fields = ['id',
+        fields = [
                 'username',
-                'email',
-                'password',
+                'location',
                 'profile_picture',
-                'description',
-                'is_verified']
+                'description',]
 
 
 
@@ -78,11 +77,11 @@ class RegisterSerializer(serializers.ModelSerializer):
                 'profile_picture',
                 'description',]
 
-class LoginSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Account
-        fields = ['email',
-                'password']
+class LoginSerializer(serializers.Serializer):
+    
+    email = serializers.EmailField(max_length=255)
+    password = serializers.CharField(max_length=255, write_only=True)
+    
 
 class RequestVerifSerializer(serializers.Serializer):
     account_id = serializers.CharField()
