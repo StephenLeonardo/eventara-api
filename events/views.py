@@ -147,9 +147,9 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
         if 'image' in request.FILES:
             image = request.FILES['image']
 
-            valid_extensions = ['jpeg', '.jpg', '.png', 'jfif', 'webp']
+            valid_extensions = ['jpeg', 'jpg', 'png', 'jfif', 'webp']
             ext = image.name.split('.')[-1]
-
+            print(ext)
             if not ext.lower() in valid_extensions:
                 return Response({
                         'Status': False,
