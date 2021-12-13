@@ -1,5 +1,6 @@
 import time
 import json
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
@@ -112,6 +113,12 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
         serialized_data = serializer.data
         instance = self.get_object()
 
+        if request.user != instance.organizer:
+            return Response({
+                "Status": False,
+                "Message": "Anda tidak mempunyai akses untuk mengedit event ini."
+            }, status=status.HTTP_403_FORBIDDEN)
+
         category_list = serialized_data.pop('categories', [])  
         
         images = serialized_data.pop('images', [])
@@ -149,7 +156,6 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
 
             valid_extensions = ['jpeg', 'jpg', 'png', 'jfif', 'webp']
             ext = image.name.split('.')[-1]
-            print(ext)
             if not ext.lower() in valid_extensions:
                 return Response({
                         'Status': False,
