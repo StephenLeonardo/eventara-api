@@ -29,7 +29,7 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
     queryset = Account.objects.all()
     
     def get_object(self):
-        if (self.action == "update" or self.action == "delete") and self.kwargs.get(self.lookup_url_kwarg) is None:  # Check if this is an update method to the list view, the URL kwargs for the lookup will not be populated
+        if (self.action == "update" or self.action == "delete" or self.action == "partial_update") and self.kwargs.get(self.lookup_url_kwarg) is None:  # Check if this is an update method to the list view, the URL kwargs for the lookup will not be populated
             user = self.request.user
             return user
         return super().get_object()
@@ -100,10 +100,12 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
 
 
     def update(self, request, *args, **kwargs):
-        # partial = kwargs.pop('partial', False)
         instance = request.user
+
         serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
+        if 'profile_picture' in serializer.validated_data and not serializer.validated_data['profile_picture']:
+            serializer.validated_data.pop('profile_picture')
         serializer.save()
 
         if getattr(instance, '_prefetched_objects_cache', None):
@@ -114,7 +116,6 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
                 'Message': 'Wow it worked!',
                 'Data': AccountSerializer(instance).data}
             )
-
 
     @swagger_auto_schema(request_body=LoginSerializer, method='POST',
                 operation_description="Log in with username/email and password")
