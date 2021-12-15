@@ -1,9 +1,13 @@
+from datetime import datetime
 from django.db import models
 from django.contrib.auth.models import (AbstractBaseUser, BaseUserManager,
                                         PermissionsMixin)
 import uuid
+from django.utils.crypto import get_random_string
 from django.utils.http import int_to_base36
 import json
+from django.core.exceptions import ValidationError
+
 # Create your models here.
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password, profile_picture, description):
@@ -42,8 +46,25 @@ class UserManager(BaseUserManager):
 def id_gen():
     """Generates random string whose length is `ID_LENGTH`"""
     return int_to_base36(uuid.uuid4().int)[:10]
+
+def path_and_rename(instance, filename):
+        ext = 'webp'
+        now = datetime.now()
+        if instance.pk:
+            filename = '{}{}.{}'.format(now.strftime('%d%H%M%S'), str(instance.pk), ext)
+        else:
+            allowed_chars=u'abcdefghijklmnopqrstuvwxyz0123456789'
+            filename = '{}{}.{}'.format(now.strftime('%d%H%M%S'), get_random_string(length=5, allowed_chars=allowed_chars), ext)
+        return 'accounts/{}/{}'.format(now.strftime('%m-%Y'), filename)
         
 class Account(AbstractBaseUser, PermissionsMixin):
+
+    def validate_image(file):
+        filesize = file.size
+        megabyte_limit = 3.0
+        if filesize > megabyte_limit*1024*1024:
+            raise ValidationError("Max file size is %sMB" % str(megabyte_limit))
+
     id = models.CharField(max_length=10, primary_key=True,
                                     default=id_gen, editable=False)
     username = models.CharField(max_length=100, unique=True, error_messages={
@@ -54,7 +75,8 @@ class Account(AbstractBaseUser, PermissionsMixin):
     })
     password = models.CharField(max_length=255)
     description = models.TextField(max_length=None, blank=True, null=True)
-    profile_picture = models.CharField(max_length=255, blank=True, null=True)
+    profile_picture = models.ImageField(upload_to=path_and_rename, max_length=255, blank=True, null=True, validators=[validate_image])
+    location = models.CharField(max_length=255, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

@@ -11,29 +11,34 @@ class MyTokenObtainPairView(TokenObtainPairView):
         if ('email' in request.data and 'password' in request.data):
             email = request.data.get('email', '')
             password = request.data.get('password', '')
+            try:
+                account = Account.objects.get((Q(username=email) | Q(email=email))
+                                                & Q(is_active=True))
 
-            account = Account.objects.get((Q(username=email) | Q(email=email))
-                                            & Q(is_active=True))
+                if account.is_verified:
+                    if account.check_password(password):
+                        refresh = RefreshToken.for_user(account)
 
-            if account.is_verified:
-                if account.check_password(password):
-                    refresh = RefreshToken.for_user(account)
+                        token = {
+                            'access': str(refresh.access_token),
+                            'refresh': str(refresh)
+                        }
 
-                    token = {
-                        'access': str(refresh.access_token),
-                        'refresh': str(refresh)
-                    }
-
-                    return Response({
-                        'Status': True,
-                        'Message': 'Wow it worked!',
-                        'Data': token
-                    })
-                else:
-                    return Response({
-                        'Status': False,
-                        'Message': 'Email or Password is incorrect'
-                    }, status=status.HTTP_401_UNAUTHORIZED)
+                        return Response({
+                            'Status': True,
+                            'Message': 'Wow it worked!',
+                            'Data': token
+                        })
+                    else:
+                        return Response({
+                            'Status': False,
+                            'Message': 'Email or Password is incorrect'
+                        }, status=status.HTTP_401_UNAUTHORIZED)
+            except Account.DoesNotExist:
+                return Response({
+                    'Status': False,
+                    'Message': 'Email or Password is incorrect.'
+                }, status=status.HTTP_401_UNAUTHORIZED)
 
 
             return Response({
