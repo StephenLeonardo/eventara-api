@@ -1,11 +1,15 @@
 import time
 import json
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import mixins
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.decorators import action
+from io import BytesIO
+from PIL import Image
+from django.core.files.base import ContentFile
 
 from .utils import path_and_rename
 from .models import Event, EventImage
@@ -81,7 +85,6 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
 
         if serializer.is_valid():
             serialized_data = serializer.data
-            print(serialized_data)
             images = serialized_data.pop('images', [])
             category_list = serialized_data.pop('categories', [])
 
@@ -109,6 +112,12 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
         serializer.is_valid(raise_exception=True)
         serialized_data = serializer.data
         instance = self.get_object()
+
+        if request.user != instance.organizer:
+            return Response({
+                "Status": False,
+                "Message": "Anda tidak mempunyai akses untuk mengedit event ini."
+            }, status=status.HTTP_403_FORBIDDEN)
 
         category_list = serialized_data.pop('categories', [])  
         
@@ -142,16 +151,35 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
     
     @action(methods=['post'], permission_classes=[IsAuthenticated], detail=False)
     def image(self, request):
-
         if 'image' in request.FILES:
             image = request.FILES['image']
-            if image:
-                month_year = time.strftime("%m-%Y")
-                path = storage.save('events/{}/{}'.format(month_year, path_and_rename(request.user.id, image.name)), image)
-                full_path = '{}{}'.format(settings.MEDIA_URL, path)
-                # serialized_data['image'] = full_path
+
+            valid_extensions = ['jpeg', 'jpg', 'png', 'jfif', 'webp']
+            ext = image.name.split('.')[-1]
+            if not ext.lower() in valid_extensions:
                 return Response({
+                        'Status': False,
+                        'Message': 'image must be in jpeg, jpg, png, jfif, or webp format',
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
+            i = Image.open(image)
+            thumb_io = BytesIO()
+            month_year = time.strftime("%m-%Y")
+            
+            i.save(thumb_io, format='webp', quality=75, save_all=True)
+            compressed_image = ContentFile(thumb_io.getvalue())
+
+            path = storage.save('events/{}/{}'.format(month_year, path_and_rename(request.user.id, image.name)), compressed_image)
+            full_path = '{}{}'.format(settings.MEDIA_URL, path)
+
+
+            return Response({
                     'Status': True,
                     'Message': 'Wow it worked!',
                     'Data': {'image_url': full_path},
-                }, status=status.HTTP_201_CREATED) 
+                }, status=status.HTTP_201_CREATED)
+
+        return Response({
+                'Status': False,
+                'Message': 'No image detected',
+            }, status=status.HTTP_400_BAD_REQUEST)

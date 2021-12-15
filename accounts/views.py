@@ -2,44 +2,45 @@ from datetime import timedelta
 from os import stat
 from django.contrib.auth.models import User
 from django.db.models.query import QuerySet
-from rest_framework.decorators import action, authentication_classes, permission_classes
-# from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import (RegisterSerializer, AccountSerializer,
-                            LoginSerializer, RequestVerifSerializer,
+from rest_framework.decorators import action
+from .serializers import (AccountPostSerializer, RegisterSerializer, AccountSerializer,
+                            LoginSerializer,
                             LoginReturnSerializer, EmailVerifSerializer,
                             OrganizationVerifSerializer)
-from rest_framework import status
-from rest_framework.mixins import (CreateModelMixin, DestroyModelMixin)
-from rest_framework.viewsets import GenericViewSet
+from rest_framework import serializers, status
+from rest_framework.mixins import (DestroyModelMixin, UpdateModelMixin)
+from rest_framework.viewsets import GenericViewSet, ViewSet
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-# import json
-# from django.forms.models import model_to_dict
 from .models import Account
-# from django.contrib.auth.hashers import check_password
 from django.db.models import Q
 from .utils import Util
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
 from django.conf import settings
-from drf_yasg.utils import swagger_auto_schema
+from drf_yasg.utils import get_serializer_class, swagger_auto_schema
 from drf_yasg import openapi
 from django.template.loader import render_to_string
 
-from accounts import serializers
-# import base64
 
 
 class AccountViewSet(DestroyModelMixin, GenericViewSet):
     serializer_class = AccountSerializer
     queryset = Account.objects.all()
-
+    
+    def get_object(self):
+        if (self.action == "update" or self.action == "delete" or self.action == "partial_update") and self.kwargs.get(self.lookup_url_kwarg) is None:  # Check if this is an update method to the list view, the URL kwargs for the lookup will not be populated
+            user = self.request.user
+            return user
+        return super().get_object()
 
     def get_serializer_class(self):
         if self.action == 'list' or self.action == 'retrieve':
             return AccountSerializer
-        if self.action == 'create':
+        elif self.action == 'create':
             return RegisterSerializer
+        elif self.action == 'update':
+            return AccountPostSerializer
 
     def get_permissions(self):
         if self.action == 'list' or self.action == 'organization_verification':
@@ -47,7 +48,6 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
         else:
             permission_classes = [AllowAny]
         return [permission() for permission in permission_classes]
-
 
     # Not a list, instead just returns one user from JWT
     def list(self, request):
@@ -67,10 +67,6 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
                 'Status': True,
                 'Message': ex
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
-
-
-
 
     def create(self, request):
         '''
@@ -103,45 +99,31 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-    
- 
+    def update(self, request, *args, **kwargs):
+        instance = request.user
 
-    # @swagger_auto_schema(method='GET',
-    #             operation_description="Get Account by JWT")
-    # @action(methods=['GET'], detail=True, permission_classes=[AllowAny])
-    # def get_by_jwt(self, request, token=None):
-        # '''
-        # Get Account by JWT
-        # '''
-        # payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-        # try:
-        #     account = Account.objects.get(id=payload['user_id'])
-        #     ret_data = AccountSerializer(account)
-            
+        serializer = self.get_serializer(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        if 'profile_picture' in serializer.validated_data and not serializer.validated_data['profile_picture']:
+            serializer.validated_data.pop('profile_picture')
+        serializer.save()
 
-        #     return Response({
-        #         'Status': True,
-        #         'Message': 'Wow it worked!',
-        #         'Data': ret_data
-        #     })
+        if getattr(instance, '_prefetched_objects_cache', None):
+            instance._prefetched_objects_cache = {}
 
-        # except Account.DoesNotExist:
-        #     return Response({
-        #         'Status': False,
-        #         'Message': 'Email or Password is incorrect'
-        #     }, status=status.HTTP_401_UNAUTHORIZED)
-        
-        
-        # if not account.is_verified:
-        #     account.is_verified = True
-        # account.save()
-
-
+        return Response({
+                'Status': True,
+                'Message': 'Wow it worked!',
+                'Data': AccountSerializer(instance).data}
+            )
 
     @swagger_auto_schema(request_body=LoginSerializer, method='POST',
                 operation_description="Log in with username/email and password")
     @action(methods=['POST'], detail=False, permission_classes=[AllowAny])
     def login(self, request, **kwargs):
+
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
         email = request.data.get('email', None)
         password = request.data.get('password', None)
 
@@ -201,7 +183,6 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
         token = request.data.get('token', None)
         try:
             payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
-            print(payload['user_id'])
             account = Account.objects.get(id=payload['user_id'])
             if not account.is_verified:
                 account.is_verified = True
@@ -277,7 +258,6 @@ class EmailVerificationViewSet(GenericViewSet):
     def create(self, request):
         token = request.data.get('token', None)
         try:
-            print('hehehehehhehehehhehheeh') 
             payload =   jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             account = Account.objects.get(id=payload['user_id'])
             if not account.is_verified:
