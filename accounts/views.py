@@ -108,7 +108,6 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
             serializer.validated_data.pop('profile_picture')
         if 'password' in serializer.validated_data:
             instance.set_password(serializer.validated_data.pop('password'))
-            
         serializer.save()
 
         if getattr(instance, '_prefetched_objects_cache', None):
