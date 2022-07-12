@@ -57,11 +57,13 @@ class LoginTokenSerializer(serializers.ModelSerializer):
                 ]
 
 class AccountPostSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(required=False)
     class Meta:
         model = Account
         fields = [
                 'username',
                 'location',
+                'password',
                 'profile_picture',
                 'description',]
 
