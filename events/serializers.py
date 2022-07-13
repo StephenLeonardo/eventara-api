@@ -18,7 +18,7 @@ class EventImagePostSerializer(serializers.ModelSerializer):
 
 
 class EventSerializer(serializers.ModelSerializer):
-    organizer = AccountSerializer(read_only=True)
+    author = AccountSerializer(read_only=True)
     categories = CategorySerializer(many=True, read_only=True)
     # images = EventImageSerializer(many=True, read_only=True)
     images = serializers.SerializerMethodField()
@@ -30,7 +30,7 @@ class EventSerializer(serializers.ModelSerializer):
                     'name',
                     'description',
                     'image',
-                    'organizer',
+                    'author',
                     'location',
                     'event_date',
                     'event_start_time',
@@ -52,7 +52,7 @@ class EventSerializer(serializers.ModelSerializer):
         return None
 
 class EventListSerializer(serializers.ModelSerializer):
-    organizer = AccountSerializer()
+    author = AccountSerializer()
     # thumbnail = EventImageSerializer(read_only=True)
     thumbnail = serializers.SerializerMethodField()
 
@@ -61,7 +61,7 @@ class EventListSerializer(serializers.ModelSerializer):
         fields = ['event_id',
                     'name',
                     'image',
-                    'organizer',
+                    'author',
                     'event_date',
                     'thumbnail']
 
