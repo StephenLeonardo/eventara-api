@@ -7,7 +7,6 @@ from django.utils.crypto import get_random_string
 from django.utils.http import int_to_base36
 import json
 from django.core.exceptions import ValidationError
-from organizers.models import Organization
 
 # Create your models here.
 class UserManager(BaseUserManager):
@@ -83,7 +82,6 @@ class Account(AbstractBaseUser, PermissionsMixin):
     is_staff = models.BooleanField(default=False)
     is_superuser = models.BooleanField(default=False)
     is_organizer = models.BooleanField(default=False)
-    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
     
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)

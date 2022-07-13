@@ -13,10 +13,7 @@ from rest_framework.viewsets import GenericViewSet, ViewSet
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from .models import Account
-from events.models import Event
-from events.serializers import EventListSerializer
 from django.db.models import Q
-from rest_framework.settings import api_settings
 from .utils import Util
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
@@ -247,36 +244,6 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
                 'Message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
-    @action(methods=['GET'], permission_classes=[IsAuthenticated], detail=False, url_path='event')
-    def account_event(self, request):
-        
-        author = request.user
-        
-        pagination_class = api_settings.DEFAULT_PAGINATION_CLASS
-        paginator = pagination_class()
-
-        queryset = None
-
-        category_list = request.query_params.get('category_id', [])
-        if  len(category_list) > 0:
-            category_list = list(map(int, category_list.split(',')))
-            queryset = Event.objects.filter(
-                                        Q(categories__in=category_list) & (Q(author=author) | Q(organization=author.organization))).order_by('-created_date').prefetch_related('author')
-        else:
-            queryset = Event.objects.filter(
-                                        Q(author=author) | Q(organization=author.organization)).order_by('-created_date').prefetch_related('author')
-        
-
-
-        events = paginator.paginate_queryset(queryset, request)
-
-        serializer = EventListSerializer(events, many=True)
-
-        return Response({
-            'Status': True,
-            'Message': 'Wow it worked!',
-            'Data': paginator.get_paginated_response(serializer.data).data
-        })
     
 
 class EmailVerificationViewSet(GenericViewSet):                     

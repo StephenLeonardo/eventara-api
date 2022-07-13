@@ -1,14 +1,14 @@
 from rest_framework import serializers
-from .models import Organization
+from .models import Organizer
 
 
-class OrganizationSerializer(serializers.ModelSerializer):
+class OrganizerSerializer(serializers.ModelSerializer):
         class Meta:
-            model = Organization
-            fields = ['organizer_id', 'name', 'abbreviation', 'photo', 'description']
+            model = Organizer
+            fields = ['organizer_id', 'name', 'photo', 'description']
             
             
-class OrganizationPostSerializer(serializers.ModelSerializer):
+class OrganizerPostSerializer(serializers.ModelSerializer):
         class Meta:
-            model = Organization
-            fields = ['name', 'photo', 'abbreviation', 'description']
+            model = Organizer
+            fields = ['name', 'photo', 'description']

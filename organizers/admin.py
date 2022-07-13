@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Organization
+from .models import Organizer
 
 # Register your models here.
-admin.site.register(Organization)
+admin.site.register(Organizer)
