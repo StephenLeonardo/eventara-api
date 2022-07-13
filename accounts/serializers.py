@@ -1,7 +1,6 @@
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 import json
-from organizers.serializers import OrganizationSerializer
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
@@ -32,7 +31,6 @@ from .models import Account
 
 
 class AccountSerializer(serializers.ModelSerializer):
-    organization = OrganizationSerializer(read_only=True)
     class Meta:
         model = Account
         fields = ['id',
@@ -42,7 +40,6 @@ class AccountSerializer(serializers.ModelSerializer):
                 'location',
                 'is_verified',
                 'is_organizer',
-                'organization',
                 'is_staff']
 
 class TokenSerializer(serializers.Serializer):

@@ -8,10 +8,9 @@ def id_gen():
     return int_to_base36(uuid.uuid4().int)[:6]
 
 # Create your models here.
-class Organization(models.Model):
+class Organizer(models.Model):
     organizer_id = models.CharField(max_length=10, primary_key=True, default=id_gen, editable=False)
-    name = models.CharField(max_length=255, null=False, blank=False)
-    abbreviation = models.CharField(max_length=255, null=True, blank=True)
+    name = models.CharField(max_length=255)
     photo = models.CharField(max_length=255, null=True, blank=True)
     description = models.CharField(max_length=255, null=True, blank=True)
     
@@ -20,4 +19,4 @@ class Organization(models.Model):
     
     
     class Meta:
-        db_table = "Organizations"
+        db_table = "Organizers"

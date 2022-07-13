@@ -54,9 +54,9 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
         if  len(category_list) > 0:
             category_list = list(map(int, category_list.split(',')))
             queryset = Event.objects.filter(
-                                        categories__in=category_list).order_by('-created_date').prefetch_related('author')
+                                        categories__in=category_list).order_by('-created_date').prefetch_related('organizer')
         else:
-            queryset = Event.objects.all().order_by('-created_date').prefetch_related('author')
+            queryset = Event.objects.all().order_by('-created_date').prefetch_related('organizer')
         
 
 
@@ -88,7 +88,7 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
             images = serialized_data.pop('images', [])
             category_list = serialized_data.pop('categories', [])
 
-            event = Event.objects.create(**serialized_data, author=request.user, organization=request.user.organization)
+            event = Event.objects.create(**serialized_data, organizer=request.user)
             event.categories.set(category_list)
             event.save()
 
@@ -183,6 +183,3 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
                 'Status': False,
                 'Message': 'No image detected',
             }, status=status.HTTP_400_BAD_REQUEST)
-        
-        
-    

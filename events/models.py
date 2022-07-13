@@ -4,7 +4,7 @@ from django.utils.http import int_to_base36
 from django.utils.crypto import get_random_string
 
 from categories.models import Category
-from organizers.models import Organization
+from organizers.models import Organizer
 from accounts.models import Account
 import datetime
 
@@ -40,7 +40,7 @@ class Event(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField(max_length=None, null=True, blank=True)
     image = models.URLField(null=True, blank=True, max_length=255)
-    author = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True)
+    organizer = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True)
     location = models.CharField(max_length=255)
     event_date = models.DateField(blank=True, null=True)
     event_start_time = models.TimeField(blank=True, null=True)
@@ -48,7 +48,6 @@ class Event(models.Model):
     categories = models.ManyToManyField(Category, blank=True)
     is_online = models.BooleanField(default=False)
     registration_link = models.TextField(null=True, blank=True)
-    organization = models.ForeignKey(Organization, on_delete=models.SET_NULL, null=True)
 
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
