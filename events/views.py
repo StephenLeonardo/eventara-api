@@ -113,7 +113,7 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
         serialized_data = serializer.data
         instance = self.get_object()
 
-        if request.user != instance.organizer:
+        if request.user != instance.author:
             return Response({
                 "Status": False,
                 "Message": "Anda tidak mempunyai akses untuk mengedit event ini."
