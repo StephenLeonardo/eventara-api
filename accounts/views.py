@@ -261,10 +261,10 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
         if  len(category_list) > 0:
             category_list = list(map(int, category_list.split(',')))
             queryset = Event.objects.filter(
-                                        Q(categories__in=category_list) & (Q(author=author) | Q(organization=author.organization))).order_by('-created_date').prefetch_related('author')
+                                        Q(categories__in=category_list) & (Q(author=author) | Q(organization=author.organization))).order_by('-event_date').prefetch_related('author')
         else:
             queryset = Event.objects.filter(
-                                        Q(author=author) | Q(organization=author.organization)).order_by('-created_date').prefetch_related('author')
+                                        Q(author=author) | Q(organization=author.organization)).order_by('-event_date').prefetch_related('author')
         
 
 

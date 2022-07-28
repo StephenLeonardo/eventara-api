@@ -54,9 +54,9 @@ class EventGenericViewSet(mixins.DestroyModelMixin,
         if  len(category_list) > 0:
             category_list = list(map(int, category_list.split(',')))
             queryset = Event.objects.filter(
-                                        categories__in=category_list).order_by('-created_date').prefetch_related('author')
+                                        categories__in=category_list).order_by('-event_date').prefetch_related('author')
         else:
-            queryset = Event.objects.all().order_by('-created_date').prefetch_related('author')
+            queryset = Event.objects.all().order_by('-event_date').prefetch_related('author')
         
 
 
