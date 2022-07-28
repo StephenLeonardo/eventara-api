@@ -146,21 +146,17 @@ class OrganizationRequest(models.Model):
     updated_date = models.DateTimeField(auto_now=True)
     
     
+class Subscription(models.Model):
+    email = models.EmailField(max_length=255, blank=True, null=True, unique=True)
+    line_id = models.CharField(max_length=255, blank=True, null=True)
+    name = models.CharField(max_length=255, blank=True, null=True)
+    
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
     
     
+    def __str__(self):
+        return self.name
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-        
-        
-        
-        
-        
-        
+    class Meta:
+        db_table = 'Subscriptions'
