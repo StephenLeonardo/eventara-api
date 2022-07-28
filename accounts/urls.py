@@ -1,3 +1,4 @@
+from email.mime import base
 from django.urls import path, include
 
 from accounts.custom_router import CustomRouter
@@ -12,6 +13,8 @@ router.register('organization-verification', views.OrganizationVerificationViewS
                     basename='organization-verification')
 router.register('verify-email-backdoor', views.VerifyEmailBackDoor,
                     basename='verify-email-backdoor')
+router.register('subscription', views.SubscriptionViewSet,
+                    basename='subscription')
 
 
 urlpatterns = [

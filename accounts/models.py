@@ -147,7 +147,7 @@ class OrganizationRequest(models.Model):
     
     
 class Subscription(models.Model):
-    email = models.CharField(max_length=255, blank=True, null=True)
+    email = models.EmailField(max_length=255, blank=True, null=True, unique=True)
     line_id = models.CharField(max_length=255, blank=True, null=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     
