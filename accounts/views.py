@@ -1,18 +1,16 @@
 from datetime import timedelta
-from os import stat
-from django.contrib.auth.models import User
-from django.db.models.query import QuerySet
 from rest_framework.decorators import action
 from .serializers import (AccountPostSerializer, RegisterSerializer, AccountSerializer,
                             LoginSerializer,
                             LoginReturnSerializer, EmailVerifSerializer,
-                            OrganizationVerifSerializer)
-from rest_framework import serializers, status
-from rest_framework.mixins import (DestroyModelMixin, UpdateModelMixin)
-from rest_framework.viewsets import GenericViewSet, ViewSet
+                            OrganizationVerifSerializer, SubscriptionPostSerializer)
+from rest_framework import status
+from rest_framework.mixins import (DestroyModelMixin, CreateModelMixin)
+from rest_framework.viewsets import GenericViewSet
+from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import AllowAny, IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from .models import Account
+from .models import Account, Subscription
 from events.models import Event
 from events.serializers import EventListSerializer
 from django.db.models import Q
@@ -21,7 +19,7 @@ from .utils import Util
 from rest_framework_simplejwt.tokens import RefreshToken
 import jwt
 from django.conf import settings
-from drf_yasg.utils import get_serializer_class, swagger_auto_schema
+from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from django.template.loader import render_to_string
 
@@ -261,10 +259,10 @@ class AccountViewSet(DestroyModelMixin, GenericViewSet):
         if  len(category_list) > 0:
             category_list = list(map(int, category_list.split(',')))
             queryset = Event.objects.filter(
-                                        Q(categories__in=category_list) & (Q(author=author) | Q(organization=author.organization))).order_by('-created_date').prefetch_related('author')
+                                        Q(categories__in=category_list) & (Q(author=author) | Q(organization=author.organization))).order_by('-event_date').prefetch_related('author')
         else:
             queryset = Event.objects.filter(
-                                        Q(author=author) | Q(organization=author.organization)).order_by('-created_date').prefetch_related('author')
+                                        Q(author=author) | Q(organization=author.organization)).order_by('-event_date').prefetch_related('author')
         
 
 
@@ -372,12 +370,15 @@ class OrganizationVerificationViewSet(
 
 
 class VerifyEmailBackDoor(GenericViewSet):
+    
+
     serializer_class = OrganizationVerifSerializer
 
 
     @swagger_auto_schema(method='POST')
     @action(methods=['POST'], detail=False)
     def verify(self, request):
+        
         try:
             email = request.data.get('email',None)
             account = Account.objects.get(email=email)
@@ -400,3 +401,21 @@ class VerifyEmailBackDoor(GenericViewSet):
                 'Status': False,
                 'Message': str(e)
             })
+            
+            
+class SubscriptionViewSet(CreateModelMixin, GenericViewSet):    
+    serializer_class = SubscriptionPostSerializer
+    queryset = Subscription.objects.all()
+    
+    def create(self, request):
+        serializer = SubscriptionPostSerializer(data=request.data)
+
+        if serializer.is_valid():
+            subscription = Subscription.objects.create(**serializer.validated_data)
+            get_serializer = SubscriptionPostSerializer(subscription)
+            return Response({
+                'Status': True,
+                'Message': 'Wow it worked!',
+                'Data': get_serializer.data,
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -26,7 +26,7 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 from rest_framework import serializers
-from .models import Account
+from .models import Account, Subscription
 
 
 
@@ -120,3 +120,9 @@ class EmailVerifSerializer(serializers.Serializer):
 
 class OrganizationVerifSerializer(serializers.Serializer):
     email = serializers.CharField()
+
+
+class SubscriptionPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        exclude = ('created_date', 'updated_date')
